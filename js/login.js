@@ -1,18 +1,16 @@
 document.getElementById('login-form').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    const usuario = document.getElementById('login-usuario').value;
+    const documento = document.getElementById('login-documento').value;
     const contrasena = document.getElementById('login-contrasena').value;
 
-    // Aquí envías los datos al endpoint de inicio de sesión en tu servidor.
-    // **Asegúrate de cambiar esta URL por la de tu backend.**
-    fetch('http://tu-servidor.com/login', {
+    fetch('http://localhost:5000/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            usuario,
+            documento,
             contrasena
         })
     })
@@ -20,10 +18,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
     .then(data => {
         if (data.success) {
             alert('¡Inicio de sesión exitoso!');
-            // Si el inicio de sesión es exitoso, el servidor puede devolver un token.
-            // Puedes guardarlo en localStorage para mantener la sesión.
-            localStorage.setItem('authToken', data.token);
-            // Y luego redirigir al usuario a la página principal.
+            localStorage.setItem('usuario', JSON.stringify(data.usuario));
             window.location.href = 'pagina-principal.html'; 
         } else {
             alert('Error al iniciar sesión: ' + data.message);

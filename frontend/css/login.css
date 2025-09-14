@@ -1,0 +1,138 @@
+    .login-form {
+      background: rgba(36,36,36,0.93);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      padding: 2.5em 2.5em 1.5em 2.5em;
+      width: 400px;
+      max-width: 90vw;
+      margin: 0 auto;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .form-title {
+      color: #EB4335;
+      font-family: 'Oswald', 'Playfair Display', serif;
+      font-size: 2.2em;
+      font-weight: 700;
+      margin-bottom: 0.2em;
+      text-align: center;
+    }
+    .form-subtitle {
+      color: #ccc;
+      font-size: 1.1em;
+      margin-bottom: 1.5em;
+      text-align: center;
+    }
+    .input-group {
+      width: 100%;
+      margin-bottom: 1.2em;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.9em 1em;
+      border: none;
+      border-radius: 6px;
+      background: #232323;
+      color: #fff;
+      font-size: 1em;
+      margin-bottom: 0.2em;
+    }
+    .create-account-btn {
+      width: 100%;
+      background: #ff9900;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.9em 0;
+      font-size: 1.1em;
+      font-weight: 700;
+      margin-top: 0.5em;
+      margin-bottom: 1em;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .create-account-btn:hover {
+      background: #e56a00;
+    }
+    .separator {
+      color: #aaa;
+      margin: 1em 0 0.5em 0;
+      text-align: center;
+    }
+    .google-login-btn {
+      width: 100%;
+      background: #fff;
+      color: #232323;
+      border: none;
+      border-radius: 6px;
+      padding: 0.9em 0;
+      font-size: 1.1em;
+      font-weight: 700;
+      margin-bottom: 1em;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .btn-text {
+      margin: 0;
+    }
+    .terms-text {
+      color: #ccc;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    .header {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 100;
+    }
+    .nav-button {
+      background-color: transparent;
+      border: 1px solid #fff;
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 5px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .nav-button:hover {
+      background-color: #fff;
+      color: #232323;
+    }
+    .background-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('../images/pexels-amirh1-16546739.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 1;
+      filter: brightness(0.5);
+    }
+    .main-content {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+    .content-overlay {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }

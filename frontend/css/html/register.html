@@ -2,21 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <h2>Registro de Usuario</h2>
-    <form id="create-account-form">
-        <input type="text" id="nombre" placeholder="Nombre completo" required>
-        <input type="text" id="contacto" placeholder="Número de contacto" required>
-        <input type="text" id="documento" placeholder="Documento" required>
-        <input type="password" id="contrasena" placeholder="Contraseña" required>
-        <button type="submit">Registrar</button>
-        <p id="registerMessage" class="message"></p>
-    </form>
-    <p><a href="index.html">Iniciar Sesión</a></p>
-
+    <div class="background-container"></div>
+    <div class="main-title">
+        Harmonics Of <br> Natural Art
+    </div>
+    <nav class="top-nav">
+        <a href="index.html" class="nav-btn">Inicio</a>
+    </nav>
+    <div class="form-wrapper">
+        <form id="create-account-form" class="login-form" style="display: block;">
+            <h2 class="form-title">Crear una cuenta</h2>
+            <p class="form-subtitle">Entra de manera gratuita con tu E-mail</p>
+            <div class="input-group">
+                <input type="text" id="nombre" placeholder="Nombre completo" required>
+            </div>
+            <div class="input-group">
+                <input type="text" id="contacto" placeholder="Número de contacto" required>
+            </div>
+            <div class="input-group">
+                <input type="text" id="documento" placeholder="Documento" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="contrasena" placeholder="Contraseña" required>
+            </div>
+            <button type="submit" class="create-account-btn">Registrar</button>
+            <p id="registerMessage" class="message"></p>
+        </form>
+    </div>
     <script src="../../../js/registrarse.js"></script>
 </body>
 </html>
