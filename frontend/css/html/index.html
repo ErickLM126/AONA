@@ -1,0 +1,123 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmonics of Natural Art</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-container"></div>
+    
+    <div class="main-title">
+        Harmonics Of <br> Natural Art
+    </div>
+
+    <nav class="top-nav">
+        <button id="show-login-btn" class="nav-btn">Inicio de sesión</button>
+        <button id="show-create-btn" class="nav-btn">Registrarse</button>
+    </nav>
+    
+    <div class="form-wrapper">
+        <form id="create-account-form" class="login-form" style="display: block;">
+            <h2 class="form-title">Crear una cuenta</h2>
+            <p class="form-subtitle">Entra de manera gratuita con tu E-mail</p>
+            <div class="input-group">
+                <input type="text" id="documento" placeholder="número de documento" required>
+            </div>
+            <div class="input-group">
+                <input type="text" id="contacto" placeholder="número de contacto" required>
+            </div>
+            <div class="input-group">
+                <input type="text" id="usuario" placeholder="usuario" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="contrasena" placeholder="contraseña" required>
+            </div>
+            
+            <button type="submit" class="create-account-btn">Crear cuenta</button>
+            
+            <p class="separator"><span>o continúa con</span></p>
+
+            <button type="button" class="google-login-btn">
+                <p class="btn-text">Crear una cuenta con Google</p>
+            </button>
+            
+            <p class="terms-text">
+                By clicking continue, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+            </p>
+        </form>
+
+        <form id="login-form" class="login-form" style="display: none;">
+            <h2 class="form-title">Iniciar Sesión</h2>
+            <p class="form-subtitle">Ingresa con tu usuario y contraseña</p>
+            <div class="input-group">
+                <input type="text" id="login-usuario" placeholder="usuario" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-contrasena" placeholder="contraseña" required>
+            </div>
+            
+            <button type="submit" class="create-account-btn">Iniciar Sesión</button>
+            
+            <p class="separator"><span>o continúa con</span></p>
+
+            <button type="button" class="google-login-btn">
+                <p class="btn-text">Iniciar Sesión con Google</p>
+            </button>
+            
+            <p class="terms-text">
+                Al hacer clic en continuar, aceptas nuestros <a href="#">Términos de servicio</a> y <a href="#">Política de privacidad</a>.
+            </p>
+        </form>
+    </div>
+    
+    <script>
+        document.getElementById('show-login-btn').addEventListener('click', function() {
+            document.getElementById('create-account-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+        });
+
+        document.getElementById('show-create-btn').addEventListener('click', function() {
+            document.getElementById('create-account-form').style.display = 'block';
+            document.getElementById('login-form').style.display = 'none';
+        });
+
+        document.getElementById('create-account-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const documento = document.getElementById('documento').value;
+            const contacto = document.getElementById('contacto').value;
+            const usuario = document.getElementById('usuario').value;
+            const contrasena = document.getElementById('contrasena').value;
+            console.log('Datos de la cuenta a guardar:', { documento, contacto, usuario, contrasena });
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('login-usuario').value;
+            const contrasena = document.getElementById('login-contrasena').value;
+            console.log('Datos de inicio de sesión:', { usuario, contrasena });
+        });
+
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const formType = urlParams.get('form');
+            const loginForm = document.getElementById('login-form');
+            const createAccountForm = document.getElementById('create-account-form');
+
+            if (formType === 'login') {
+                createAccountForm.style.display = 'none';
+                loginForm.style.display = 'block';
+            } else if (formType === 'register') {
+                createAccountForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+

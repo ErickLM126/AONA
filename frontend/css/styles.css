@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Inknut+Antiqua:wght@400;700&family=Oswald:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+
+body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    color: #f0f0f0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    position: relative;
+    text-align: center;
+}
+
+.background-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://images.pexels.com/photos/16546739/pexels-photo-16546739/free-photo-of-mountain-road-and-clouds.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(50%);
+    z-index: -1;
+}
+
+.top-nav {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.nav-btn {
+    background-color: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 8px 12px;
+    margin-left: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-btn:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    position: absolute; 
+    top: 0;
+    left: 0;
+}
+
+.login-form {
+    background-color: rgba(36, 36, 36, 0.9);
+    padding: 1.5em 2em;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    color: #f0f0f0;
+    width: 300px; 
+    max-width: 90%;
+    margin: auto;
+    z-index: 5;
+}
+
+.main-title {
+    font-family: 'Inknut Antiqua', serif;
+    font-size: 3.0em;
+    font-weight: 650;
+    color: #974104;
+    line-height: 1.1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    z-index: 1;
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%); 
+    text-align: center;
+    white-space: nowrap;
+}
+
+.form-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.8em;
+    font-weight: 600;
+    color: #EB4335;
+    margin-bottom: 0.5em;
+}
+
+.form-subtitle {
+    font-size: 0.9em;
+    color: #bbb;
+    margin-bottom: 1.5em;
+}
+
+.input-group {
+    margin-bottom: 1em;
+}
+
+.input-group input {
+    width: calc(100% - 20px);
+    padding: 0.8em 10px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #333;
+    color: #f0f0f0;
+    font-size: 0.9em;
+    box-sizing: border-box;
+}
+
+.input-group input::placeholder {
+    color: #888;
+}
+
+.create-account-btn {
+    width: 100%;
+    padding: 0.9em;
+    margin-top: 1em;
+    background-color: #ff9900;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.create-account-btn:hover {
+    background-color: #e68a00;
+}
+
+.separator {
+    margin: 1.5em 0;
+    position: relative;
+    font-size: 0.8em;
+    color: #aaa;
+}
+
+.separator span {
+    background-color: rgba(36, 36, 36, 0.9);
+    padding: 0 10px;
+    z-index: 2;
+    position: relative;
+}
+
+.separator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #555;
+    z-index: 1;
+}
+
+.google-login-btn {
+    width: 100%;
+    padding: 0.9em;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.google-login-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
+}
+
+.btn-text {
+    margin: 0;
+}
+
+.terms-text {
+    font-size: 0.7em;
+    color: #999;
+    margin-top: 2em;
+    line-height: 1.4;
+}
+
+.terms-text a {
+    color: #ff9900;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.terms-text a:hover {
+    color: #e68a00;
+    text-decoration: underline;
+}
