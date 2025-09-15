@@ -3,7 +3,6 @@ from flask_cors import CORS
 import mysql.connector
 from mysql.connector import Error
 
-# Configuración de la base de datos
 DB_CONFIG = {
     "host": "localhost",
     "user": "root",        
@@ -14,7 +13,6 @@ DB_CONFIG = {
 app = Flask(__name__)
 CORS(app)
 
-# Conexión a la base de datos
 def get_db_connection():
     try:
         connection = mysql.connector.connect(**DB_CONFIG)
@@ -23,7 +21,6 @@ def get_db_connection():
         print(f"Error al conectar a MySQL: {e}")
         return None
 
-# ------------------ RUTA REGISTRO ------------------
 @app.route('/registro', methods=['POST'])
 def registrar_usuario():
     data = request.get_json()
@@ -52,7 +49,6 @@ def registrar_usuario():
         cursor.close()
         connection.close()
 
-# ------------------ RUTA LOGIN ------------------
 @app.route('/login', methods=['POST'])
 def login_usuario():
     data = request.get_json()
@@ -71,7 +67,6 @@ def login_usuario():
         usuario = cursor.fetchone()
 
         if usuario:
-            # Aquí podrías generar un token, por ahora devolvemos éxito
             return jsonify({
                 "success": True,
                 "message": "Inicio de sesión exitoso",
