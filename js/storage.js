@@ -31,16 +31,14 @@ function redirectByRole(role) {
 }
 
 
-// esta es la que se agrega para consumir la api
+
 async function loginUsuario(user, password) {
     try {
-        // Datos para enviar al login
         const loginData = {
             correo_usuario: user,
             clave_usuario: password
         };
 
-        // Petición POST al login
         const response = await fetch("http://localhost:3001/api/usuario/login/", {
             method: "POST",
             headers: {
