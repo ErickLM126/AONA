@@ -1,0 +1,268 @@
+/* ========================================================= */
+/* Estilos Generales y Reseteo */
+/* ========================================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #d8d8d8;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Contenedor principal de la aplicación, centrado y con sombra */
+.main-container {
+    display: flex;
+    height: 100vh;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el contenedor del chat, si usas uno separado */
+.chat-container {
+    display: flex;
+    height: 100vh;
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================================= */
+/* Estilos de la lista de chats (Panel Izquierdo) */
+/* ========================================================= */
+.chat-list-sidebar {
+    width: 30%;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.chat-search {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f1f1f1;
+    border-bottom: 1px solid #eee;
+}
+
+.chat-search input {
+    flex-grow: 1;
+    border: none;
+    background-color: transparent;
+    padding: 8px 12px;
+    outline: none;
+}
+
+.chat-search .fa-magnifying-glass {
+    color: #888;
+    margin-right: 10px;
+}
+
+.chat-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-item:hover {
+    background-color: #f0f0f0;
+}
+
+.chat-item.active {
+    background-color: #e9e9e9;
+    border-left: 3px solid rgb(0, 0, 0);
+}
+
+.chat-item img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.chat-info h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.chat-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ========================================================= */
+/* Estilos de la Ventana de Conversación (Panel Derecho) */
+/* ========================================================= */
+.chat-window {
+    width: 70%;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-window-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    justify-content: space-between;
+}
+
+.chat-window-header .chat-info {
+    margin-left: 10px;
+}
+
+.chat-actions {
+    display: flex;
+    gap: 15px;
+    color: #888;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilos de la burbuja de mensaje - MODIFICADOS */
+.chat-messages .message {
+    max-width: 50%; /* Mantienes este valor para el ancho máximo */
+    padding: 6px 8px; /* Mantienes el relleno más pequeño */
+    margin-bottom: 5px; /* Mantienes el espacio entre burbujas */
+    border-radius: 15px; /* Mantienes el borde redondeado */
+    position: relative;
+    word-wrap: break-word;
+    font-size: 0.85rem;
+}
+
+/* Mensajes recibidos (izquierdos) */
+.message.received {
+    background-color: #e0e0e0;
+    align-self: flex-start;
+    color: #333;
+}
+
+/* Mensajes enviados (derechos) */
+.message.sent {
+    background-color: #000000;
+    color: rgb(214, 214, 214);
+    align-self: flex-end;
+}
+
+/* Hora del mensaje */
+.message span {
+    font-size: 0.6rem;
+    color: #a0a0a0;
+    display: block;
+    text-align: right;
+    margin-top: 3px;
+}
+
+.message.sent span {
+    color: #cccccc;
+}
+
+/* Área de entrada de texto */
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+}
+
+.chat-input-area input {
+    flex-grow: 1;
+    border: none;
+    background-color: #f1f1f1;
+    border-radius: 25px;
+    padding: 10px 15px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.chat-input-area .fa-paperclip,
+.chat-input-area .fa-camera {
+    color: #888;
+    margin: 0 10px;
+    cursor: pointer;
+}
+
+.chat-input-area button {
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.2s;
+}
+
+.chat-input-area button:hover {
+    background-color: #333333;
+}
+
+/* Estilos para el menú de los 3 puntos (si lo implementas) */
+.profile-menu {
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    display: none; /* Se oculta por defecto y se muestra con JavaScript */
+}
+
+.profile-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-menu li {
+    padding: 10px 15px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.profile-menu li:hover {
+    background-color: #f0f0f0;
+}
