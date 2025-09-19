@@ -1,0 +1,308 @@
+/* Importar fuentes y estilos generales */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+}
+
+.main-container {
+    display: flex;
+    width: 90%;
+    max-width: 1400px;
+    background-color: #f0f2f5;
+    padding: 20px 0;
+    box-sizing: border-box;
+}
+
+/* --- Menú Lateral Izquierdo --- */
+.left-sidebar {
+    width: 25%;
+    max-width: 300px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 90vh;
+    margin-right: 20px;
+}
+
+/* * ESTILOS AGREGADOS PARA EL PERFIL DEL USUARIO
+ * Estos estilos reemplazan la sección duplicada.
+ */
+#user-profile-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 20px;
+    border-radius: 50px;
+    background-color: #e6e6e6;
+    transition: all 0.5s ease;
+    /* Asegura que el perfil esté arriba */
+    order: -1; 
+    margin-bottom: 20px;
+}
+
+#user-profile-container img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#user-profile-container h2 {
+    font-size: 1.2rem;
+    color: #333;
+    margin: 0;
+}
+
+.sidebar-nav {
+    flex-grow: 1;
+    margin-top: 20px;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #555;
+    font-size: 1rem;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-item:hover {
+    background-color: #e6e6e6;
+    color: #000;
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+    margin-right: 15px;
+}
+
+.logout-section {
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Clases para ocultar/mostrar el perfil (controladas por JS) */
+.profile-hidden {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.profile-visible {
+    display: flex; /* Cambia a flex para que sea visible */
+    opacity: 1;
+    visibility: visible;
+}
+
+/* --- Contenido Central --- */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.search-and-create {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background-color: #f7f7f7;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.create-post-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.create-post-btn:hover {
+    background-color: #5a6268;
+}
+
+.post-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.post-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.post-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.post-info span {
+    display: block;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.post-body h4 {
+    margin: 0 0 10px 0;
+    font-weight: 500;
+}
+
+.post-body img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* --- Barra de Chat Derecha --- */
+.right-sidebar {
+    width: 25%;
+    max-width: 300px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    margin-left: 20px;
+}
+
+.chat-search {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.chat-search input {
+    width: 100%;
+    padding: 10px 10px 10px 40px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    background-color: #f7f7f7;
+}
+
+.chat-search i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.chat-list {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.chat-item:hover {
+    background-color: #f9f9f9;
+}
+
+.chat-item img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+}
+
+.chat-info {
+    flex-grow: 1;
+}
+
+.chat-info h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.chat-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Media Queries para Responsive Design */
+@media (max-width: 1200px) {
+    .main-container {
+        flex-direction: column;
+        width: 100%;
+        padding: 10px;
+    }
+
+    .left-sidebar, .right-sidebar {
+        width: 100%;
+        max-width: none;
+        margin: 10px 0;
+        height: auto;
+        padding: 15px;
+    }
+
+    .left-sidebar .logout-section {
+        display: none; /* Opcional: Ocultar si el espacio es limitado */
+    }
+
+    .main-content {
+        order: -1; /* Mover el contenido principal arriba en móviles */
+    }
+}
+
