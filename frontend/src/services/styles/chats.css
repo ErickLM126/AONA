@@ -1,6 +1,3 @@
-/* ========================================================= */
-/* Estilos Generales y Reseteo */
-/* ========================================================= */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -14,7 +11,6 @@ body {
     color: #333;
 }
 
-/* Contenedor principal de la aplicación, centrado y con sombra */
 .main-container {
     display: flex;
     height: 100vh;
@@ -24,7 +20,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilos para el contenedor del chat, si usas uno separado */
 .chat-container {
     display: flex;
     height: 100vh;
@@ -34,9 +29,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* ========================================================= */
-/* Estilos de la lista de chats (Panel Izquierdo) */
-/* ========================================================= */
 .chat-list-sidebar {
     width: 30%;
     background-color: #f9f9f9;
@@ -120,9 +112,7 @@ body {
     text-overflow: ellipsis;
 }
 
-/* ========================================================= */
-/* Estilos de la Ventana de Conversación (Panel Derecho) */
-/* ========================================================= */
+
 .chat-window {
     width: 70%;
     background-color: #fff;
@@ -159,10 +149,10 @@ body {
 
 /* Estilos de la burbuja de mensaje - MODIFICADOS */
 .chat-messages .message {
-    max-width: 50%; /* Mantienes este valor para el ancho máximo */
-    padding: 6px 8px; /* Mantienes el relleno más pequeño */
-    margin-bottom: 5px; /* Mantienes el espacio entre burbujas */
-    border-radius: 15px; /* Mantienes el borde redondeado */
+    max-width: 50%;
+    padding: 6px 8px; 
+    margin-bottom: 5px;
+    border-radius: 15px; 
     position: relative;
     word-wrap: break-word;
     font-size: 0.85rem;

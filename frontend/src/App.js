@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Admin from "./pages/admin";
 import Login from "./pages/login";
 import Home from "./pages/home";
 import Chats from "./pages/chats";
@@ -13,9 +12,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/home" element={<Home />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/terminos" element={<Terminos />} />
         <Route path="/privacidad" element={<Privacidad />} />
         <Route path="/inicio" element={<PaginaInicio />} />
