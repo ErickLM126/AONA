@@ -1,0 +1,54 @@
+# =========================
+# Node / React
+# =========================
+node_modules/
+build/
+dist/
+.pnp
+.pnp.js
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# Python / Flask
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Flask specific
+instance/
+*.log
+
+# =========================
+# IDE / Misc
+# =========================
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# Coverage / Testing
+coverage/
+.pytest_cache/

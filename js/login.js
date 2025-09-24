@@ -19,7 +19,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
         if (data.success) {
             alert('¡Inicio de sesión exitoso!');
             localStorage.setItem('usuario', JSON.stringify(data.usuario));
-            window.location.href = 'pagina-principal.html'; 
+            window.location.href = 'home.html'; 
         } else {
             alert('Error al iniciar sesión: ' + data.message);
         }
