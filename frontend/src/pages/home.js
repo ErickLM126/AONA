@@ -40,7 +40,7 @@ function Home() {
         </nav>
 
         <div className="logout-section">
-          <a href="paginadeinicio.html" className="nav-item" id="logout-button">
+          <a href="/paginadeinicio" className="nav-item" id="logout-button">
             <i className="fa-solid fa-arrow-right-from-bracket"></i>
             <span>Cerrar Sesión</span>
           </a>

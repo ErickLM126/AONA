@@ -48,7 +48,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-image: url('../images/principal.png');
+    background-image: url('../../assets/images/principal.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -109,7 +109,7 @@ body {
 .expanded-section {
     width: 100vw;
     min-height: 100vh;
-    background-image: url('../images/principal.png');
+    background-image: url('../../assets/images/principal.png');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
@@ -132,7 +132,7 @@ body {
     width: 300px;
     height: 300px;
     margin: 50px auto;
-    background-image: url('../images/botonmusica.png'); 
+    background-image: url('../../assets/images/botonmusica.png');
     background-size: cover;
     background-position: center;
     border-radius: 15px;
