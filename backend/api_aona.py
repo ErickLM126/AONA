@@ -49,7 +49,7 @@ def registrar_usuario():
         cursor.close()
         connection.close()
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET','POST'])
 def login_usuario():
     data = request.get_json()
     documento = data.get('documento')
@@ -85,6 +85,5 @@ def login_usuario():
         cursor.close()
         connection.close()
 
-# ------------------ MAIN ------------------
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

@@ -6,7 +6,6 @@ const chatItems = document.querySelectorAll(".chat-item");
 const chatSearchInput = document.querySelector(".chat-search input");
 const chatActionsButton = document.querySelector(".chat-actions .fa-ellipsis-v");
 
-// Simula los datos de las conversaciones
 const conversations = {
     'Helena Hills': [
         { text: 'Hola, ¿qué tal?', sent: false },
@@ -24,7 +23,6 @@ const conversations = {
     ]
 };
 
-// Función para crear un nuevo elemento de mensaje
 function createMessageElement(messageText, isSent = true) {
     const messageDiv = document.createElement("div");
     messageDiv.classList.add("message");
@@ -43,7 +41,6 @@ function createMessageElement(messageText, isSent = true) {
     return messageDiv;
 }
 
-// Función para cargar una conversación
 function loadConversation(userName) {
     chatMessages.innerHTML = '';
     const chatHistory = conversations[userName] || [];
@@ -54,7 +51,6 @@ function loadConversation(userName) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Función para enviar un mensaje
 function sendMessage() {
     const messageText = messageInput.value.trim();
     if (messageText !== "") {
@@ -65,7 +61,6 @@ function sendMessage() {
     }
 }
 
-// Función para filtrar los chats
 function filterChats() {
     const searchTerm = chatSearchInput.value.toLowerCase();
     chatItems.forEach(item => {
@@ -78,11 +73,9 @@ function filterChats() {
     });
 }
 
-// Función para mostrar/ocultar el menú de los 3 puntos
 function toggleProfileMenu() {
     let profileMenu = document.querySelector('.profile-menu');
     if (!profileMenu) {
-        // Si el menú no existe, lo creamos
         profileMenu = document.createElement('div');
         profileMenu.classList.add('profile-menu');
         profileMenu.innerHTML = `
@@ -93,13 +86,11 @@ function toggleProfileMenu() {
         `;
         document.body.appendChild(profileMenu);
         
-        // Posiciona el menú cerca del botón
         const buttonRect = chatActionsButton.getBoundingClientRect();
         profileMenu.style.top = `${buttonRect.bottom + 5}px`;
         profileMenu.style.right = `${window.innerWidth - buttonRect.right}px`;
         profileMenu.style.display = 'block';
 
-        // Cierra el menú si se hace clic fuera de él
         document.addEventListener('click', (event) => {
             if (!chatActionsButton.contains(event.target) && !profileMenu.contains(event.target)) {
                 profileMenu.style.display = 'none';
@@ -107,14 +98,11 @@ function toggleProfileMenu() {
         });
 
     } else {
-        // Si el menú ya existe, simplemente cambia su visibilidad
         profileMenu.style.display = profileMenu.style.display === 'block' ? 'none' : 'block';
     }
 }
 
-// Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
-    // Carga la conversación inicial del chat activo
     const initialChat = document.querySelector(".chat-item.active");
     if (initialChat) {
         const initialUser = initialChat.querySelector("h5").textContent;
@@ -131,16 +119,14 @@ chatItems.forEach(item => {
     });
 });
 
-// Este es el listener que hace que el botón de enviar funcione
 if (sendButton) {
     sendButton.addEventListener("click", sendMessage);
 }
 
-// Este es el listener para la tecla "Enter"
 if (messageInput) {
     messageInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            event.preventDefault(); // Evita el salto de línea por defecto
+            event.preventDefault();
             sendMessage();
         }
     });
