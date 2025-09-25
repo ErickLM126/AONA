@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from api_aona import app
+from backend.api_aona import app
 
 
 class TestApiAona(unittest.TestCase):
@@ -8,7 +8,7 @@ class TestApiAona(unittest.TestCase):
 		self.app = app.test_client()
 		self.app.testing = True
 
-	@patch('api_aona.get_db_connection')
+	@patch('backend.api_aona.get_db_connection')
 	def test_registro_usuario_exitoso(self, mock_db_conn):
 		mock_conn = MagicMock()
 		mock_cursor = MagicMock()
@@ -31,7 +31,7 @@ class TestApiAona(unittest.TestCase):
 		self.assertEqual(data["message"], "Artista registrado con éxito")
 		self.assertTrue(data["success"])
 
-	@patch('api_aona.get_db_connection')
+	@patch('backend.api_aona.get_db_connection')
 	def test_login_usuario_exitoso(self, mock_db_conn):
 		mock_conn = MagicMock()
 		mock_cursor = MagicMock()
@@ -59,7 +59,7 @@ class TestApiAona(unittest.TestCase):
 		self.assertIn("usuario", data)
 		self.assertEqual(data["usuario"]["nombre"], "Test User")
 
-	@patch('api_aona.get_db_connection')
+	@patch('backend.api_aona.get_db_connection')
 	def test_login_usuario_fallido(self, mock_db_conn):
 		mock_conn = MagicMock()
 		mock_cursor = MagicMock()
