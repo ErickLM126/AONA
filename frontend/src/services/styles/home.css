@@ -1,66 +1,62 @@
-/* Importar fuentes y estilos generales */
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #f0f2f5;
+    background: #e0e0e0;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    height: 100vh;
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
 }
 
 .main-container {
     display: flex;
-    width: 90%;
-    max-width: 1400px;
-    background-color: #f0f2f5;
-    padding: 20px 0;
+    width: 100vw;
+    min-height: 100vh;
+    background: transparent;
     box-sizing: border-box;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
 }
 
-/* --- Menú Lateral Izquierdo --- */
 .left-sidebar {
-    width: 25%;
-    max-width: 300px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px;
+    background: #e6e6e6;
+    padding: 32px 24px;
+    width: 320px;
+    min-width: 220px;
+    max-width: 350px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 90vh;
-    margin-right: 20px;
+    justify-content: flex-start;
+    align-items: stretch;
+    height: 100vh;
+    border-right: 2px solid #d1d1d1;
 }
 
-/* * ESTILOS AGREGADOS PARA EL PERFIL DEL USUARIO
- * Estos estilos reemplazan la sección duplicada.
- */
 #user-profile-container {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 15px;
-    padding: 10px 20px;
-    border-radius: 50px;
-    background-color: #e6e6e6;
-    transition: all 0.5s ease;
-    /* Asegura que el perfil esté arriba */
-    order: -1; 
-    margin-bottom: 20px;
+    padding: 0 0 24px 0;
+    background: none;
+    margin-bottom: 24px;
+    border-radius: 0;
 }
 
 #user-profile-container img {
-    width: 60px;
-    height: 60px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     object-fit: cover;
 }
 
 #user-profile-container h2 {
-    font-size: 1.2rem;
-    color: #333;
+    font-size: 2rem;
+    color: #111;
     margin: 0;
+    font-weight: bold;
 }
 
 .sidebar-nav {
@@ -72,150 +68,204 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: #555;
-    font-size: 1rem;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 8px;
-    transition: background-color 0.3s, color 0.3s;
+    color: #111;
+    font-size: 1.25rem;
+    font-weight: 500;
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    gap: 16px;
 }
 
 .nav-item:hover {
-    background-color: #e6e6e6;
-    color: #000;
-}
-
-.nav-item i {
-    font-size: 1.2rem;
-    width: 25px;
-    text-align: center;
-    margin-right: 15px;
+    background: #f0f2f5;
+    color: #222;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
 }
 
 .logout-section {
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+    margin-top: auto;
+    padding-top: 24px;
 }
 
-/* Clases para ocultar/mostrar el perfil (controladas por JS) */
-.profile-hidden {
-    display: none;
-    opacity: 0;
-    visibility: hidden;
+.logout-section .nav-item {
+    background: #fff;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 400;
+    padding: 10px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
-.profile-visible {
-    display: flex; /* Cambia a flex para que sea visible */
-    opacity: 1;
-    visibility: visible;
+.logout-section .nav-item:hover {
+    background: #f8d7da;
+    color: #c82333;
 }
 
-/* --- Contenido Central --- */
+/* Panel central */
 .main-content {
-    flex-grow: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    align-items: center;
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 0 0 2px #111, 0 4px 24px rgba(0,0,0,0.09);
+    padding: 32px 24px;
+    height: 100vh;
+    overflow: hidden; /* Cambia de auto a hidden */
+    position: relative;
 }
 
+/* El header de búsqueda y botón siempre arriba */
 .search-and-create {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px;
+    width: 100%;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 0 18px 0;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 18px;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #fff;
 }
 
 .search-input {
     width: 100%;
+    max-width: 400px;
     padding: 10px;
     border-radius: 20px;
-    border: 1px solid #ddd;
-    background-color: #f7f7f7;
+    border: 1.5px solid #111;
+    background: #fff;
+    font-size: 1.1rem;
     text-align: center;
-    box-sizing: border-box;
+    margin-bottom: 12px;
 }
 
 .create-post-btn {
     width: 100%;
-    padding: 12px;
-    background-color: #6c757d;
+    max-width: 350px;
+    padding: 16px;
+    background: linear-gradient(90deg, #1de9b6 0%, #1dc8e9 100%);
     color: #fff;
     border: none;
-    border-radius: 20px;
+    border-radius: 14px;
     cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: background-color 0.3s;
+    font-size: 1.25rem;
+    font-weight: bold;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    margin-bottom: 0;
+    transition: background 0.2s, box-shadow 0.2s;
 }
 
 .create-post-btn:hover {
-    background-color: #5a6268;
+    background: linear-gradient(90deg, #1dc8e9 0%, #1de9b6 100%);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.13);
 }
 
 .post-card {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+    background: #fafbfc;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: 0 auto;
+    border: 1.5px solid #e0e0e0;
+    transition: box-shadow 0.2s;
+}
+
+.post-card:hover {
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    border-color: #b2e0c9;
 }
 
 .post-header {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    width: 100%;
 }
 
 .post-header img {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    margin-right: 15px;
+    margin-right: 16px;
+    object-fit: cover;
+    border: 2px solid #b2e0c9;
 }
 
 .post-header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #222;
 }
 
 .post-info span {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.95rem;
     color: #888;
 }
 
 .post-body h4 {
     margin: 0 0 10px 0;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.post-body p {
+    margin: 0 0 10px 0;
+    color: #444;
+    font-size: 1rem;
 }
 
 .post-body img {
     width: 100%;
     height: auto;
-    border-radius: 8px;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* --- Barra de Chat Derecha --- */
+/* Panel derecho */
 .right-sidebar {
-    width: 25%;
-    max-width: 300px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px;
+    background: linear-gradient(180deg, #d2f3e6 0%, #b2e0c9 100%);
+    border-radius: 0 24px 24px 0;
+    box-shadow: none;
+    padding: 24px 12px;
+    width: 340px;
+    min-width: 220px;
+    max-width: 350px;
     display: flex;
     flex-direction: column;
-    height: 90vh;
-    margin-left: 20px;
+    justify-content: flex-start;
+    height: 100vh;
+    border-left: 2px solid #d1d1d1;
 }
 
 .chat-search {
@@ -228,8 +278,8 @@ body {
     padding: 10px 10px 10px 40px;
     border-radius: 20px;
     border: 1px solid #ddd;
-    box-sizing: border-box;
-    background-color: #f7f7f7;
+    background: #fff;
+    font-size: 1rem;
 }
 
 .chat-search i {
@@ -243,6 +293,7 @@ body {
 .chat-list {
     overflow-y: auto;
     flex-grow: 1;
+    max-height: 80vh;
 }
 
 .chat-item {
@@ -250,59 +301,193 @@ body {
     align-items: center;
     padding: 10px 0;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background 0.2s;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .chat-item:hover {
-    background-color: #f9f9f9;
+    background: #e6e6e6;
 }
 
 .chat-item img {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
     margin-right: 15px;
 }
 
-.chat-info {
-    flex-grow: 1;
-}
-
 .chat-info h5 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 500;
 }
 
 .chat-info p {
     margin: 0;
-    font-size: 0.8rem;
-    color: #888;
+    font-size: 0.9rem;
+    color: #222;
 }
 
-/* Media Queries para Responsive Design */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-publicacion {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  padding: 2em;
+  width: 90vw;
+  max-width: 500px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.modal-back {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  margin-top: 2.5em;
+}
+
+.modal-textarea {
+  width: 100%;
+  padding: 1em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1.1em;
+  resize: vertical;
+}
+
+.modal-file {
+  margin-bottom: 1em;
+}
+
+.modal-publicar-btn {
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.8em 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.modal-mensaje {
+  margin-top: 0.5em;
+  color: #d32f2f;
+  font-size: 1em;
+  text-align: center;
+}
+
+/* Agrega o ajusta esto en tu home.css para el scroll del feed */
+.feed-publicaciones {
+  width: 100%;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 24px;
+  margin-top: 12px;
+  max-height: calc(100vh - 180px); /* Ajusta según el alto de tu header/botón */
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
     .main-container {
         flex-direction: column;
-        width: 100%;
-        padding: 10px;
+        align-items: stretch;
+        gap: 0;
+        padding: 0;
     }
-
-    .left-sidebar, .right-sidebar {
-        width: 100%;
-        max-width: none;
-        margin: 10px 0;
-        height: auto;
-        padding: 15px;
-    }
-
-    .left-sidebar .logout-section {
-        display: none; /* Opcional: Ocultar si el espacio es limitado */
-    }
-
+    .left-sidebar,
+    .right-sidebar,
     .main-content {
-        order: -1; /* Mover el contenido principal arriba en móviles */
+        width: 100vw;
+        max-width: none;
+        margin: 0;
+        border-radius: 0;
+        height: auto;
+        min-width: 0;
+    }
+    .main-content {
+        margin: 0;
+        padding: 24px 8px;
+    }
+}
+
+@media (max-width: 900px) {
+    .main-container {
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+    }
+    .left-sidebar,
+    .right-sidebar,
+    .main-content {
+        padding: 12px 0;
+        border-radius: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .main-container {
+        padding: 0;
+        gap: 0;
+    }
+    .left-sidebar,
+    .right-sidebar,
+    .main-content {
+        padding: 4px 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .search-and-create,
+    .post-card {
+        padding: 8px 2px;
+        border-radius: 6px;
+    }
+    .sidebar-nav ul {
+        flex-direction: column;
+    }
+    .chat-item img,
+    #user-profile-container img {
+        width: 32px;
+        height: 32px;
+    }
+    .chat-item {
+        padding: 4px 0;
+    }
+    .nav-item,
+    .create-post-btn,
+    .search-input {
+        font-size: 1rem;
+    }
+    .post-header h3,
+    .chat-info h5 {
+        font-size: 0.95rem;
     }
 }
 

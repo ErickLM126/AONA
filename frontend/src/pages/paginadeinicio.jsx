@@ -1,5 +1,9 @@
 import React from "react";
 import "../services/styles/paginadeinicio.css";
+import arte from "../assets/images/arte.jpg";
+import guitarra from "../assets/images/guitarra.jpg";
+import audifonos from "../assets/images/audifonos.jpg";
+import calle from "../assets/images/calle.jpg";
 
 function LandingPage() {
   return (
@@ -67,22 +71,22 @@ function LandingPage() {
 
             <div className="gallery">
               <img
-                src="/images/arte.jpg"
+                src={arte}
                 alt="Musical art image 1"
                 className="gallery-image"
               />
               <img
-                src="/images/guitarra.jpg"
+                src={guitarra}
                 alt="Musical art image 2"
                 className="gallery-image"
               />
               <img
-                src="/images/audifonos.jpg"
+                src={audifonos}
                 alt="Musical art image 3"
                 className="gallery-image"
               />
               <img
-                src="/images/calle.jpg"
+                src={calle}
                 alt="Musical art image 4"
                 className="gallery-image"
               />
