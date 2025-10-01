@@ -56,7 +56,12 @@ function Home() {
       return;
     }
     const formData = new FormData();
-    formData.append("usuario", nombreUsuario);
+    const idUsuario = localStorage.getItem("idUsuario"); // Cambiado
+    if (!idUsuario) {
+      setMensaje("No se encontró el usuario. Inicia sesión de nuevo.");
+      return;
+    }
+    formData.append("id_usuario", idUsuario); // Cambiado
     formData.append("texto", texto);
     if (imagen) formData.append("imagen", imagen);
 
@@ -176,7 +181,6 @@ function Home() {
             </div>
           </div>
         )}
-
 
         <div className="feed-publicaciones">
           {publicacionesFiltradas.length === 0 && (

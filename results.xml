@@ -1,1 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="4" time="0.560" timestamp="2025-09-25T17:16:04.373277-05:00" hostname="BOGDFPCGMP5737"><testcase classname="backend.tests.test_api_aona.TestApiAona" name="test_login_usuario_exitoso" time="0.018" /><testcase classname="backend.tests.test_api_aona.TestApiAona" name="test_login_usuario_fallido" time="0.004" /><testcase classname="backend.tests.test_api_aona.TestApiAona" name="test_registro_usuario_exitoso" time="0.012" /><testcase classname="backend.tests.test_registro.TestRegistroUsuario" name="test_registro_usuario_exitoso" time="0.012" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="0.574" timestamp="2025-10-01T12:56:59.008527-05:00" hostname="BOGDFPCGMP5737"><testcase classname="backend.tests.test_api_aona.TestApiAona" name="test_login_usuario_exitoso" time="0.047" /><testcase classname="backend.tests.test_api_aona.TestApiAona" name="test_login_usuario_fallido" time="0.005"><failure message="AssertionError: 'Credenciales incorrectas' != 'Documento o contraseña incorrectos'&#10;- Credenciales incorrectas&#10;+ Documento o contraseña incorrectos">self = &lt;backend.tests.test_api_aona.TestApiAona testMethod=test_login_usuario_fallido&gt;
+mock_db_conn = &lt;MagicMock name='get_db_connection' id='2327526232080'&gt;
+
+    @patch('backend.api_aona.get_db_connection')
+    def test_login_usuario_fallido(self, mock_db_conn):
+    	mock_conn = MagicMock()
+    	mock_cursor = MagicMock()
+    	mock_db_conn.return_value = mock_conn
+    	mock_conn.cursor.return_value = mock_cursor
+    
+    	mock_cursor.fetchone.return_value = None
+    	mock_cursor.close.return_value = None
+    	mock_conn.close.return_value = None
+    
+    	payload = {
+    		'documento': 'noexiste',
+    		'contrasena': 'incorrecta'
+    	}
+    	response = self.app.post('/login', json=payload)
+    	self.assertEqual(response.status_code, 401)
+    	data = response.get_json()
+&gt;   	self.assertEqual(data["message"], "Documento o contraseña incorrectos")
+E    AssertionError: 'Credenciales incorrectas' != 'Documento o contraseña incorrectos'
+E    - Credenciales incorrectas
+E    + Documento o contraseña incorrectos
+
+backend\tests\test_api_aona.py:80: AssertionError</failure></testcase></testsuite></testsuites>

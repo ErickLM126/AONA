@@ -43,7 +43,6 @@ function LandingPage() {
         </div>
       </main>
 
-      {/* Section Música */}
       <section id="music-section" className="expanded-section">
         <div className="text-block">
           <p>Una comunidad para artistas y amantes del arte natural.</p>

@@ -26,6 +26,9 @@ function Login() {
         if (data.usuario && data.usuario.nombre) {
           localStorage.setItem("nombreUsuario", data.usuario.nombre);
         }
+        if (data.usuario && data.usuario.id) {
+          localStorage.setItem("idUsuario", data.usuario.id); // <-- Guarda el ID aquí
+        }
         setMensaje("¡Inicio de sesión exitoso! Redirigiendo...");
         setTimeout(() => {
           navigate("/home");

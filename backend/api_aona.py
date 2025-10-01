@@ -101,29 +101,32 @@ def login_usuario():
 
 @app.route('/publicar', methods=['POST'])
 def publicar():
-    id_artista = None
     texto = request.form.get('texto')
-    usuario = request.form.get('usuario')
+    id_artista = request.form.get('id_usuario')
     fecha_publicacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     imagen_url = None
+    tipo = "texto"
+
+    if not id_artista:
+        return jsonify({"success": False, "message": "ID de usuario no proporcionado"}), 400
+
+    if 'imagen' in request.files and request.files['imagen']:
+        imagen = request.files['imagen']
+        filename = secure_filename(imagen.filename)
+        ruta = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        imagen.save(ruta)
+        imagen_url = f"/uploads/{filename}"
+        tipo = "imagen"  # Cambia el tipo si hay imagen
 
     connection = get_db_connection()
     if not connection:
         return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
     cursor = connection.cursor(dictionary=True)
     try:
-        cursor.execute("SELECT id FROM artistas WHERE nombre = %s", (usuario,))
+        cursor.execute("SELECT id FROM artistas WHERE id = %s", (id_artista,))
         artista = cursor.fetchone()
         if not artista:
             return jsonify({"success": False, "message": "Usuario no encontrado"}), 400
-        id_artista = artista["id"]
-
-        if 'imagen' in request.files and request.files['imagen']:
-            imagen = request.files['imagen']
-            filename = secure_filename(imagen.filename)
-            ruta = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            imagen.save(ruta)
-            imagen_url = f"/uploads/{filename}"
 
         cursor.execute("""
             INSERT INTO publicaciones (id_artista, titulo, tipo, contenido, fecha_publicacion, estado_aprobacion, vistas)
@@ -131,7 +134,7 @@ def publicar():
         """, (
             id_artista,
             texto[:50] if texto else "Sin título",
-            "normal",
+            tipo,  # <-- ahora es dinámico
             texto,
             fecha_publicacion,
             "aprobado",
