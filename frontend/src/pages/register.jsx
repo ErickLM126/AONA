@@ -1,40 +1,35 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../services/styles/register.css";
+import { useRegistro } from "../hooks/useRegistro";
 
 function Registro() {
   const [nombre, setNombre] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [email, setEmail] = useState("");
+  const [contrasena, setContrasena] = useState("");
   const [contacto, setContacto] = useState("");
   const [documento, setDocumento] = useState("");
-  const [contrasena, setContrasena] = useState("");
-  const [mensaje, setMensaje] = useState("");
+  const [idRol, setIdRol] = useState(1); // Por defecto 1
   const navigate = useNavigate();
+  const { registrar, mensaje, cargando, setMensaje } = useRegistro();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMensaje("");
-    try {
-      const response = await fetch("http://localhost:5000/registro", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nombre,
-          contacto,
-          documento,
-          contrasena,
-        }),
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setMensaje("¡Registro exitoso! Redirigiendo...");
-        setTimeout(() => {
-          navigate("/login");
-        }, 1200);
-      } else {
-        setMensaje(data.message || "Error en el registro");
-      }
-    } catch (error) {
-      setMensaje("Error de conexión con el servidor");
+    const res = await registrar({
+      nombre,
+      usuario,
+      email,
+      contrasena,
+      contacto,
+      documento,
+      id_rol: idRol,
+    });
+    if (res.exito) {
+      setTimeout(() => {
+        navigate("/login");
+      }, 1200);
     }
   };
 
@@ -56,9 +51,36 @@ function Registro() {
           <div className="input-group">
             <input
               type="text"
-              placeholder="Nombre de usuario"
+              placeholder="Nombre"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
+              required
+            />
+          </div>
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder="Usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              required
+            />
+          </div>
+          <div className="input-group">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="input-group">
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
               required
             />
           </div>
@@ -82,15 +104,15 @@ function Registro() {
           </div>
           <div className="input-group">
             <input
-              type="password"
-              placeholder="Contraseña"
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
+              type="number"
+              placeholder="ID Rol"
+              value={idRol}
+              onChange={(e) => setIdRol(e.target.value)}
               required
             />
           </div>
-          <button type="submit" className="create-account-btn">
-            Crear cuenta
+          <button type="submit" className="create-account-btn" disabled={cargando}>
+            {cargando ? "Registrando..." : "Crear cuenta"}
           </button>
           {mensaje && (
             <div style={{ marginTop: "1em", color: "#EB4335" }}>{mensaje}</div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePublicaciones } from "../hooks/usePublicaciones";
 import "../services/styles/home.css";
 
 function Home() {
@@ -7,28 +8,22 @@ function Home() {
   const [showModal, setShowModal] = useState(false);
   const [texto, setTexto] = useState("");
   const [imagen, setImagen] = useState(null);
-  const [mensaje, setMensaje] = useState("");
-  const [publicaciones, setPublicaciones] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const navigate = useNavigate();
+
+  const {
+    publicaciones,
+    mensaje,
+    setMensaje,
+    cargarPublicaciones,
+    publicar,
+  } = usePublicaciones();
 
   useEffect(() => {
     const nombre = localStorage.getItem("nombreUsuario");
     if (nombre) setNombreUsuario(nombre);
     cargarPublicaciones();
   }, []);
-
-  const cargarPublicaciones = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/publicaciones");
-      const data = await res.json();
-      if (data.success) {
-        setPublicaciones(data.publicaciones);
-      }
-    } catch (e) {
-      // Puedes mostrar un mensaje de error si quieres
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem("nombreUsuario");
@@ -55,29 +50,10 @@ function Home() {
       setMensaje("Agrega texto o una imagen/video.");
       return;
     }
-    const formData = new FormData();
-    formData.append("usuario", nombreUsuario);
-    formData.append("texto", texto);
-    if (imagen) formData.append("imagen", imagen);
-
-    try {
-      const response = await fetch("http://localhost:5000/publicar", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        setMensaje("¡Publicación subida!");
-        setTimeout(() => {
-          setShowModal(false);
-          cargarPublicaciones(); // Recarga publicaciones
-        }, 1000);
-      } else {
-        setMensaje(data.message || "Error al publicar.");
-      }
-    } catch (error) {
-      setMensaje("Error de conexión.");
-    }
+    await publicar({ usuario: nombreUsuario, texto, imagen });
+    setTimeout(() => {
+      setShowModal(false);
+    }, 1000);
   };
 
   // Filtrado de publicaciones por búsqueda
@@ -176,7 +152,6 @@ function Home() {
             </div>
           </div>
         )}
-
 
         <div className="feed-publicaciones">
           {publicacionesFiltradas.length === 0 && (

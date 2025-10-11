@@ -7,6 +7,7 @@ import Chats from "./pages/chats.jsx";
 import Privacidad from "./pages/privacidad.jsx";
 import Registro from "./pages/register.jsx";
 import Terminos from "./pages/terminos.jsx";
+import Tienda from "./pages/tienda.jsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/privacidad" element={<Privacidad />} />
         <Route path="/register" element={<Registro />} />
         <Route path="/terminos" element={<Terminos />} />
+        <Route path="/tienda" element={<Tienda />} />
       </Routes>
     </BrowserRouter>
   );
