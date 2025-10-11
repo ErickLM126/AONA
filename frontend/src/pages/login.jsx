@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../services/styles/login.css";
+import { useLogin } from "../hooks/useLogin";
 
 function Login() {
   const [identificador, setIdentificador] = useState("");
   const [contrasena, setContrasena] = useState("");
-  const [mensaje, setMensaje] = useState("");
   const navigate = useNavigate();
+  const { login, mensaje, cargando, setMensaje } = useLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,26 +16,12 @@ function Login() {
       setMensaje("Por favor completa todos los campos.");
       return;
     }
-    try {
-      const response = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identificador, contrasena }),
-      });
-      const data = await response.json();
-      if (response.ok && data.success) {
-        if (data.usuario && data.usuario.nombre) {
-          localStorage.setItem("nombreUsuario", data.usuario.nombre);
-        }
-        setMensaje("¡Inicio de sesión exitoso! Redirigiendo...");
-        setTimeout(() => {
-          navigate("/home");
-        }, 1200);
-      } else {
-        setMensaje(data.message || "Credenciales incorrectas.");
-      }
-    } catch (error) {
-      setMensaje("Error de conexión con el servidor.");
+    const res = await login({ identificador, contrasena });
+    if (res.exito && res.usuario && res.usuario.nombre) {
+      localStorage.setItem("nombreUsuario", res.usuario.nombre);
+      setTimeout(() => {
+        navigate("/home");
+      }, 1200);
     }
   };
 
@@ -69,8 +56,8 @@ function Login() {
                 required
               />
             </div>
-            <button type="submit" className="create-account-btn">
-              Iniciar Sesión
+            <button type="submit" className="create-account-btn" disabled={cargando}>
+              {cargando ? "Ingresando..." : "Iniciar Sesión"}
             </button>
             <p className="separator"><span>o continúa con</span></p>
             <button type="button" className="google-login-btn">
