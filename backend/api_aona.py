@@ -23,6 +23,26 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# ENDPOINTS (ETIQUETAS)
+# --------------------
+# # Docs (no endpoint): documentación en código usando comentarios con '#'
+# # Auth
+#   - # Endpoint: POST /registro
+#     # Description: Registrar un nuevo usuario. JSON: { nombre, usuario, email, contrasena, contacto, documento, id_rol? }
+#   - # Endpoint: POST /login
+#     # Description: Iniciar sesión por documento o nombre + contrasena. JSON: { identificador, contrasena }
+# # Publicaciones
+#   - # Endpoint: POST /publicar
+#     # Description: Crear publicación (form-data: texto, usuario, imagen opcional)
+#   - # Endpoint: GET /publicaciones
+#     # Description: Obtener publicaciones con autor e imagen si existe
+# # Uploads
+#   - # Endpoint: GET /uploads/<filename>
+#     # Description: Servir archivos subidos (imagenes)
+# # Productos
+#   - # Endpoint: GET /api/productos
+#     # Description: Listar productos con url de imagen (placeholder si no existe)
+
 def get_db_connection():
     try:
         connection = mysql.connector.connect(**DB_CONFIG)
@@ -31,6 +51,9 @@ def get_db_connection():
         print(f"Error al conectar a MySQL: {e}")
         return None
 
+# # Tag: Auth
+# # Endpoint: POST /registro
+# # Description: Registra un usuario nuevo.
 @app.route('/registro', methods=['POST'])
 def registrar_usuario():
     data = request.get_json()
@@ -68,6 +91,9 @@ def registrar_usuario():
         cursor.close()
         connection.close()
 
+# # Tag: Auth
+# # Endpoint: POST /login
+# # Description: Autentica usuario por documento o nombre + contraseña.
 @app.route('/login', methods=['POST'])
 def login_usuario():
     data = request.get_json()
@@ -105,6 +131,9 @@ def login_usuario():
         cursor.close()
         connection.close()
 
+# # Tag: Publicaciones
+# # Endpoint: POST /publicar
+# # Description: Crear una publicación de texto o con imagen. form-data.
 @app.route('/publicar', methods=['POST'])
 def publicar():
     id_autor = None
@@ -163,10 +192,16 @@ def publicar():
         cursor.close()
         connection.close()
 
+# # Tag: Uploads
+# # Endpoint: GET /uploads/<filename>
+# # Description: Servir archivos subidos desde la carpeta uploads.
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# # Tag: Publicaciones
+# # Endpoint: GET /publicaciones
+# # Description: Recupera publicaciones con autor y URL de imagen (si existe).
 @app.route('/publicaciones', methods=['GET'])
 def obtener_publicaciones():
     connection = get_db_connection()
@@ -190,6 +225,9 @@ def obtener_publicaciones():
         cursor.close()
         connection.close()
 
+# # Tag: Productos
+# # Endpoint: GET /api/productos
+# # Description: Devuelve lista de productos con imagen (o placeholder si no hay).
 @app.route('/api/productos')
 def get_productos():
     connection = get_db_connection()
