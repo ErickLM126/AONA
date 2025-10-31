@@ -24,7 +24,7 @@ function LandingPage() {
           <h2 className="title-text">
             Harmonics Of <br /> Natural Art
           </h2>
-          <a href="#music-section" className="scroll-arrow">
+          <a href="#music-card" className="scroll-arrow">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
