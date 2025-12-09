@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-12-2025 a las 14:11:14
+-- Tiempo de generación: 09-12-2025 a las 17:07:47
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -80,7 +80,68 @@ INSERT INTO `chats` (`id`, `id_emisor`, `id_receptor`, `mensaje`, `fecha_envio`)
 (2, 19, 13, 'Hola Juan', '2025-12-08 18:14:26'),
 (3, 19, 13, 'Como va todo?', '2025-12-08 18:14:47'),
 (4, 19, 13, 'Bien?', '2025-12-08 18:20:56'),
-(5, 19, 13, 'Todo bien?', '2025-12-08 18:23:18');
+(5, 19, 13, 'Todo bien?', '2025-12-08 18:23:18'),
+(6, 13, 19, 'xD', '2025-12-09 08:48:53'),
+(7, 13, 19, 'Xd', '2025-12-09 08:49:22'),
+(8, 13, 19, 'a', '2025-12-09 11:00:07');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `comentarios`
+--
+
+CREATE TABLE `comentarios` (
+  `id` int(11) NOT NULL,
+  `id_publicacion` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `comentario` varchar(1000) DEFAULT NULL,
+  `fecha` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `comentarios`
+--
+
+INSERT INTO `comentarios` (`id`, `id_publicacion`, `id_usuario`, `comentario`, `fecha`) VALUES
+(1, 11, 13, 'xd', '2025-12-09 09:26:08'),
+(3, 11, 13, 'a', '2025-12-09 09:50:36');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `comentarios_perfil`
+--
+
+CREATE TABLE `comentarios_perfil` (
+  `id` int(11) NOT NULL,
+  `id_perfil_usuario` int(11) NOT NULL,
+  `id_usuario_comentario` int(11) NOT NULL,
+  `comentario` varchar(1000) NOT NULL,
+  `fecha` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `denuncias`
+--
+
+CREATE TABLE `denuncias` (
+  `id` int(11) NOT NULL,
+  `id_publicacion` int(11) NOT NULL,
+  `motivo` varchar(255) DEFAULT NULL,
+  `fecha_denuncia` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `denuncias`
+--
+
+INSERT INTO `denuncias` (`id`, `id_publicacion`, `motivo`, `fecha_denuncia`) VALUES
+(1, 3, 'contenido_ofensivo', '2025-12-09 13:33:28'),
+(2, 11, 'a\n', '2025-12-09 14:26:22'),
+(3, 11, 'Contenido ofensivo', '2025-12-09 15:58:05');
 
 -- --------------------------------------------------------
 
@@ -116,7 +177,9 @@ CREATE TABLE `imagenes_perfil` (
 
 INSERT INTO `imagenes_perfil` (`id`, `id_usuario`, `url`, `fecha_subida`, `es_principal`) VALUES
 (1, 13, '/uploads/cd94d1c0-e684-419a-9ed5-b3a0d412e440_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:39:57', 0),
-(2, 13, '/uploads/abce9412-f674-4441-8de8-404637718c91_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:50:34', 1);
+(2, 13, '/uploads/abce9412-f674-4441-8de8-404637718c91_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:50:34', 0),
+(3, 13, '/uploads/a688f1ed-3973-4146-88c9-42531482c11a_xD.jpg', '2025-12-09 09:41:43', 0),
+(4, 13, '/uploads/3d2203bf-6c30-4e2a-b442-82cb9a723d55_Crew_positions-Organigrama.png', '2025-12-09 11:00:37', 1);
 
 -- --------------------------------------------------------
 
@@ -147,9 +210,8 @@ CREATE TABLE `imagenes_publicacion` (
 --
 
 INSERT INTO `imagenes_publicacion` (`id`, `id_publicacion`, `url`) VALUES
-(1, 2, '/uploads/The-Sludgification-Of-Music-Business-503493283.webp'),
 (2, 3, '/uploads/The-Sludgification-Of-Music-Business-503493283.webp'),
-(3, 10, '/uploads/35889ac151f32e3f6293999f368a5fa0.jpg');
+(4, 11, '/uploads/xD.jpg');
 
 -- --------------------------------------------------------
 
@@ -203,15 +265,13 @@ CREATE TABLE `publicaciones` (
 --
 
 INSERT INTO `publicaciones` (`id`, `id_autor`, `titulo`, `tipo`, `contenido`, `fecha_publicacion`, `estado_aprobacion`, `fijada`, `vistas`) VALUES
-(1, 13, ':d', 'texto', ':d', '2025-10-06 15:42:39', 'aprobado', 0, 0),
-(2, 13, ':D', 'imagen', ':D', '2025-10-06 15:42:49', 'aprobado', 0, 0),
 (3, 19, 'Hola', 'imagen', 'Hola', '2025-10-06 21:01:32', 'aprobado', 0, 0),
-(5, 19, 'a', 'texto', 'a', '2025-12-08 15:48:36', 'aprobado', 0, 0),
+(5, 19, 'a', 'texto', 'a', '2025-12-08 15:48:36', 'aprobado', 1, 0),
 (6, 19, 'b', 'texto', 'b', '2025-12-08 15:48:40', 'aprobado', 0, 0),
 (7, 19, 'c', 'texto', 'c', '2025-12-08 15:48:43', 'aprobado', 0, 0),
 (8, 19, 'd', 'texto', 'd', '2025-12-08 15:48:45', 'aprobado', 0, 0),
-(9, 19, 'e', 'texto', 'e', '2025-12-08 15:48:49', 'aprobado', 0, 0),
-(10, 13, ':v', 'imagen', ':v', '2025-12-08 17:41:20', 'aprobado', 0, 0);
+(9, 19, 'e', 'texto', 'e', '2025-12-08 15:48:49', 'aprobado', 1, 0),
+(11, 13, 'xD', 'imagen', 'xD', '2025-12-09 08:29:03', 'aprobado', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -227,6 +287,13 @@ CREATE TABLE `reacciones` (
   `comentario` varchar(500) DEFAULT NULL,
   `fecha` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `reacciones`
+--
+
+INSERT INTO `reacciones` (`id`, `id_publicacion`, `id_usuario`, `tipo`, `comentario`, `fecha`) VALUES
+(6, 11, 13, 'inspirador', NULL, '2025-12-09 10:58:16');
 
 -- --------------------------------------------------------
 
@@ -282,8 +349,8 @@ CREATE TABLE `seguimientos` (
 --
 
 INSERT INTO `seguimientos` (`id`, `id_usuario`, `id_seguido`, `fecha_seguimiento`) VALUES
-(1, 13, 19, '2025-12-08 15:47:26'),
-(2, 19, 13, '2025-12-08 15:48:20');
+(2, 19, 13, '2025-12-08 15:48:20'),
+(3, 13, 19, '2025-12-09 08:49:45');
 
 -- --------------------------------------------------------
 
@@ -310,7 +377,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `usuario`, `email`, `contrasena`, `numero_contacto`, `documento`, `id_rol`, `fecha_registro`, `imagen_perfil_url`, `fecha_actualizacion`) VALUES
-(13, 'Juan', 'Juan123', 'juan234@gmail.com', '123456', '123456', '123456', 1, '2025-10-06 15:25:59', '/uploads/abce9412-f674-4441-8de8-404637718c91_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:50:34'),
+(13, 'Juan', 'Juan123', 'juan234@gmail.com', '123456', '123456', '123456', 1, '2025-10-06 15:25:59', '/uploads/3d2203bf-6c30-4e2a-b442-82cb9a723d55_Crew_positions-Organigrama.png', '2025-12-09 11:00:37'),
 (18, 'Maria', 'Maria123', 'mariap@gmail.com', '123456', '103368854', '58796541', 1, '2025-10-06 20:50:45', NULL, '2025-12-08 14:43:00'),
 (19, 'Pablo ', 'Pablo1', 'pablo123@gmail.com', '123456', '10685496471', '10236885485', 1, '2025-10-06 21:00:42', NULL, '2025-12-08 14:43:00');
 
@@ -374,6 +441,29 @@ ALTER TABLE `chats`
   ADD PRIMARY KEY (`id`),
   ADD KEY `id_emisor` (`id_emisor`),
   ADD KEY `id_receptor` (`id_receptor`);
+
+--
+-- Indices de la tabla `comentarios`
+--
+ALTER TABLE `comentarios`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_publicacion` (`id_publicacion`),
+  ADD KEY `id_usuario` (`id_usuario`);
+
+--
+-- Indices de la tabla `comentarios_perfil`
+--
+ALTER TABLE `comentarios_perfil`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_perfil_usuario` (`id_perfil_usuario`),
+  ADD KEY `id_usuario_comentario` (`id_usuario_comentario`);
+
+--
+-- Indices de la tabla `denuncias`
+--
+ALTER TABLE `denuncias`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_publicacion` (`id_publicacion`);
 
 --
 -- Indices de la tabla `detalle_venta`
@@ -508,7 +598,25 @@ ALTER TABLE `categorias`
 -- AUTO_INCREMENT de la tabla `chats`
 --
 ALTER TABLE `chats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT de la tabla `comentarios`
+--
+ALTER TABLE `comentarios`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `comentarios_perfil`
+--
+ALTER TABLE `comentarios_perfil`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `denuncias`
+--
+ALTER TABLE `denuncias`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_venta`
@@ -520,7 +628,7 @@ ALTER TABLE `detalle_venta`
 -- AUTO_INCREMENT de la tabla `imagenes_perfil`
 --
 ALTER TABLE `imagenes_perfil`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `imagenes_producto`
@@ -532,7 +640,7 @@ ALTER TABLE `imagenes_producto`
 -- AUTO_INCREMENT de la tabla `imagenes_publicacion`
 --
 ALTER TABLE `imagenes_publicacion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `metodos_pago`
@@ -550,13 +658,13 @@ ALTER TABLE `productos`
 -- AUTO_INCREMENT de la tabla `publicaciones`
 --
 ALTER TABLE `publicaciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `reacciones`
 --
 ALTER TABLE `reacciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `resenas`
@@ -574,7 +682,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT de la tabla `seguimientos`
 --
 ALTER TABLE `seguimientos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
@@ -617,6 +725,26 @@ ALTER TABLE `carrito_detalle`
 ALTER TABLE `chats`
   ADD CONSTRAINT `chats_ibfk_1` FOREIGN KEY (`id_emisor`) REFERENCES `usuarios` (`id`),
   ADD CONSTRAINT `chats_ibfk_2` FOREIGN KEY (`id_receptor`) REFERENCES `usuarios` (`id`);
+
+--
+-- Filtros para la tabla `comentarios`
+--
+ALTER TABLE `comentarios`
+  ADD CONSTRAINT `comentarios_ibfk_1` FOREIGN KEY (`id_publicacion`) REFERENCES `publicaciones` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `comentarios_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`);
+
+--
+-- Filtros para la tabla `comentarios_perfil`
+--
+ALTER TABLE `comentarios_perfil`
+  ADD CONSTRAINT `comentarios_perfil_ibfk_1` FOREIGN KEY (`id_perfil_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `comentarios_perfil_ibfk_2` FOREIGN KEY (`id_usuario_comentario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `denuncias`
+--
+ALTER TABLE `denuncias`
+  ADD CONSTRAINT `denuncias_ibfk_1` FOREIGN KEY (`id_publicacion`) REFERENCES `publicaciones` (`id`);
 
 --
 -- Filtros para la tabla `detalle_venta`
