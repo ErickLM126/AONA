@@ -1,48 +1,57 @@
 import { useState } from "react";
-import { obtenerPublicaciones, publicarContenido } from "../services/publicacionesService";
+
+const API_URL = "http://localhost:5000";
 
 export function usePublicaciones() {
   const [publicaciones, setPublicaciones] = useState([]);
   const [mensaje, setMensaje] = useState("");
-  const [cargando, setCargando] = useState(false);
 
   const cargarPublicaciones = async () => {
-    setCargando(true);
     try {
-      const data = await obtenerPublicaciones();
-      if (data.success) setPublicaciones(data.publicaciones);
-    } catch {
-      setMensaje("Error al cargar publicaciones");
-    } finally {
-      setCargando(false);
+      const response = await fetch(`${API_URL}/publicaciones`);
+      const data = await response.json();
+      if (data.success) {
+        setPublicaciones(data.publicaciones);
+      }
+    } catch (error) {
+      console.error("Error al cargar publicaciones:", error);
     }
   };
 
   const publicar = async ({ usuario, texto, imagen }) => {
-    setCargando(true);
-    setMensaje("");
+    const formData = new FormData();
+    formData.append("usuario", usuario);
+    formData.append("texto", texto);
+    if (imagen) {
+      formData.append("imagen", imagen);
+    }
+
     try {
-      const data = await publicarContenido({ usuario, texto, imagen });
+      const response = await fetch(`${API_URL}/publicar`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
       if (data.success) {
-        setMensaje("¡Publicación subida!");
-        await cargarPublicaciones();
+        setMensaje("Publicacion realizada con exito");
+        cargarPublicaciones();
+        return true;
       } else {
-        setMensaje(data.message || "Error al publicar.");
+        setMensaje(data.message || "Error al publicar");
+        return false;
       }
-    } catch {
-      setMensaje("Error de conexión.");
-    } finally {
-      setCargando(false);
+    } catch (error) {
+      setMensaje("Error de conexion");
+      console.error("Error:", error);
+      return false;
     }
   };
 
   return {
     publicaciones,
     mensaje,
-    cargando,
     setMensaje,
     cargarPublicaciones,
     publicar,
-    setPublicaciones,
   };
 }

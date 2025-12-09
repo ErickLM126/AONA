@@ -5,6 +5,7 @@ from mysql.connector import Error
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import uuid
 
 
 DB_CONFIG = {
@@ -30,6 +31,7 @@ def get_db_connection():
     except Error as e:
         print(f"Error al conectar a MySQL: {e}")
         return None
+
 
 @app.route('/registro', methods=['POST'])
 def registrar_usuario():
@@ -175,13 +177,22 @@ def obtener_publicaciones():
     cursor = connection.cursor(dictionary=True)
     try:
         cursor.execute("""
-            SELECT p.id, p.titulo, p.contenido, p.fecha_publicacion, u.nombre AS autor,
-                (SELECT url FROM imagenes_publicacion WHERE id_publicacion = p.id LIMIT 1) AS imagen_url
+            SELECT p.id, p.titulo, p.contenido, p.fecha_publicacion, u.nombre AS autor, u.id AS id_autor,
+                   u.imagen_perfil_url AS imagen_perfil,
+                   (SELECT url FROM imagenes_publicacion WHERE id_publicacion = p.id LIMIT 1) AS imagen_url
             FROM publicaciones p
             JOIN usuarios u ON p.id_autor = u.id
             ORDER BY p.fecha_publicacion DESC
         """)
         publicaciones = cursor.fetchall()
+        
+        # Procesar URLs de imágenes
+        for pub in publicaciones:
+            if pub['imagen_url'] and not pub['imagen_url'].startswith('http'):
+                pub['imagen_url'] = f"http://localhost:5000{pub['imagen_url']}"
+            if pub['imagen_perfil'] and not pub['imagen_perfil'].startswith('http'):
+                pub['imagen_perfil'] = f"http://localhost:5000{pub['imagen_perfil']}"
+        
         return jsonify({"success": True, "publicaciones": publicaciones}), 200
     except Exception as e:
         print("Error:", e)
@@ -215,6 +226,893 @@ def get_productos():
         cursor.close()
         connection.close()
 
+# Endpoints para Chats
+
+@app.route('/api/chats', methods=['GET'])
+def obtener_chats():
+    usuario_id = request.args.get('usuario_id')
+    
+    print(f"[CHATS] Solicitud recibida - usuario_id: {usuario_id}")
+    
+    if not usuario_id:
+        return jsonify({"success": False, "message": "usuario_id requerido"}), 400
+    
+    connection = get_db_connection()
+    if not connection:
+        print("[CHATS] Error: No se pudo conectar a la BD")
+        return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+    
+    cursor = connection.cursor(dictionary=True)
+    try:
+        # Obtener chats del usuario actual (conversaciones existentes)
+        cursor.execute("""
+            SELECT DISTINCT 
+                CASE 
+                    WHEN c.id_emisor = %s THEN c.id_receptor
+                    ELSE c.id_emisor
+                END AS id_contacto,
+                MAX(c.fecha_envio) AS ultima_interaccion
+            FROM chats c
+            WHERE c.id_emisor = %s OR c.id_receptor = %s
+            GROUP BY id_contacto
+            ORDER BY ultima_interaccion DESC
+        """, (usuario_id, usuario_id, usuario_id))
+        
+        contactos_ids = cursor.fetchall()
+        print(f"[CHATS] Contactos encontrados: {contactos_ids}")
+        
+        chats = []
+        for contacto in contactos_ids:
+            cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (contacto['id_contacto'],))
+            usuario_info = cursor.fetchone()
+            if usuario_info:
+                chat_data = {
+                    "id_contacto": usuario_info['id'],
+                    "nombre_contacto": usuario_info['nombre'],
+                    "ultima_interaccion": contacto['ultima_interaccion']
+                }
+                chats.append(chat_data)
+                print(f"[CHATS] Chat añadido: {chat_data}")
+        
+        print(f"[CHATS] Retornando {len(chats)} chats")
+        return jsonify({"success": True, "chats": chats}), 200
+    except Exception as e:
+        print(f"[CHATS] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/api/chats/mensajes', methods=['GET'])
+def obtener_mensajes():
+    usuario1 = request.args.get('usuario1')
+    usuario2 = request.args.get('usuario2')
+    
+    if not usuario1 or not usuario2:
+        return jsonify({"success": False, "message": "usuario1 y usuario2 requeridos"}), 400
+    
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+    
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT c.id, c.id_emisor, c.id_receptor, c.mensaje, c.fecha_envio,
+                   u_emisor.nombre AS nombre_emisor, u_receptor.nombre AS nombre_receptor
+            FROM chats c
+            JOIN usuarios u_emisor ON c.id_emisor = u_emisor.id
+            JOIN usuarios u_receptor ON c.id_receptor = u_receptor.id
+            WHERE (c.id_emisor = %s AND c.id_receptor = %s) 
+               OR (c.id_emisor = %s AND c.id_receptor = %s)
+            ORDER BY c.fecha_envio ASC
+        """, (usuario1, usuario2, usuario2, usuario1))
+        
+        mensajes = cursor.fetchall()
+        return jsonify({"success": True, "mensajes": mensajes}), 200
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/api/chats/enviar', methods=['POST'])
+def enviar_mensaje():
+    data = request.get_json()
+    id_emisor = data.get('id_emisor')
+    id_receptor = data.get('id_receptor')
+    mensaje = data.get('mensaje')
+    fecha_envio = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    if not all([id_emisor, id_receptor, mensaje]):
+        return jsonify({"success": False, "message": "Datos incompletos"}), 400
+    
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+    
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO chats (id_emisor, id_receptor, mensaje, fecha_envio)
+            VALUES (%s, %s, %s, %s)
+        """, (id_emisor, id_receptor, mensaje, fecha_envio))
+        connection.commit()
+        
+        return jsonify({
+            "success": True, 
+            "message": "Mensaje enviado",
+            "id_mensaje": cursor.lastrowid
+        }), 200
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/api/chats/buscar', methods=['GET'])
+def buscar_chats():
+    usuario_id = request.args.get('usuario_id')
+    termino = request.args.get('termino', '')
+    
+    if not usuario_id:
+        return jsonify({"success": False, "message": "usuario_id requerido"}), 400
+    
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+    
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT DISTINCT 
+                CASE 
+                    WHEN c.id_emisor = %s THEN c.id_receptor
+                    ELSE c.id_emisor
+                END AS id_contacto
+            FROM chats c
+            WHERE (c.id_emisor = %s OR c.id_receptor = %s)
+        """, (usuario_id, usuario_id, usuario_id))
+        
+        contactos_ids = cursor.fetchall()
+        chats = []
+        
+        for contacto in contactos_ids:
+            cursor.execute(
+                "SELECT id, nombre FROM usuarios WHERE id = %s AND nombre LIKE %s",
+                (contacto['id_contacto'], f"%{termino}%")
+            )
+            usuario_info = cursor.fetchone()
+            if usuario_info:
+                chats.append({
+                    "id_contacto": usuario_info['id'],
+                    "nombre_contacto": usuario_info['nombre']
+                })
+        
+        return jsonify({"success": True, "chats": chats}), 200
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/api/perfil/<int:usuario_id>', methods=['GET'])
+def obtener_perfil(usuario_id):
+    """Obtiene los datos del perfil de un usuario"""
+    try:
+        print(f"[PERFIL GET] Iniciando - usuario_id: {usuario_id}")
+        
+        connection = get_db_connection()
+        if not connection:
+            print("[PERFIL GET] Error: No se pudo conectar a la BD")
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Obtener datos del usuario incluyendo imagen
+        cursor.execute("""
+            SELECT id, nombre, usuario, email, numero_contacto, documento, 
+                   fecha_registro, imagen_perfil_url
+            FROM usuarios
+            WHERE id = %s
+        """, (usuario_id,))
+        usuario = cursor.fetchone()
+        
+        if not usuario:
+            print(f"[PERFIL GET] Usuario {usuario_id} no encontrado")
+            return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
+        
+        print(f"[PERFIL GET] Usuario ID: {usuario['id']}")
+        
+        # Obtener publicaciones del usuario
+        cursor.execute("""
+            SELECT p.id, p.titulo, p.contenido, p.fecha_publicacion, p.tipo,
+                   (SELECT url FROM imagenes_publicacion WHERE id_publicacion = p.id LIMIT 1) AS imagen_url
+            FROM publicaciones p
+            WHERE p.id_autor = %s AND p.estado_aprobacion = 'aprobado'
+            ORDER BY p.fecha_publicacion DESC
+        """, (usuario_id,))
+        publicaciones = cursor.fetchall()
+        
+        # Obtener productos (sencillos musicales) del usuario
+        cursor.execute("""
+            SELECT p.id, p.nombre as titulo, p.descripcion,
+                   (SELECT url FROM imagenes_producto WHERE id_producto = p.id LIMIT 1) AS imagen_url
+            FROM productos p
+            WHERE p.id_artista = %s AND p.estado = 'activo'
+            ORDER BY p.fecha_creacion DESC
+            LIMIT 6
+        """, (usuario_id,))
+        productos = cursor.fetchall()
+        
+        # Obtener comentarios en publicaciones del usuario
+        cursor.execute("""
+            SELECT r.id, r.comentario, r.tipo, u.nombre as autor, u.id as autor_id
+            FROM reacciones r
+            JOIN usuarios u ON r.id_usuario = u.id
+            JOIN publicaciones p ON r.id_publicacion = p.id
+            WHERE p.id_autor = %s AND r.comentario IS NOT NULL
+            ORDER BY r.fecha DESC
+            LIMIT 5
+        """, (usuario_id,))
+        comentarios = cursor.fetchall()
+        
+        # Obtener estadísticas
+        cursor.execute("""
+            SELECT 
+                (SELECT COUNT(*) FROM publicaciones WHERE id_autor = %s AND estado_aprobacion = 'aprobado') AS publicaciones_count,
+                (SELECT COUNT(*) FROM seguimientos WHERE id_seguido = %s) AS seguidores_count,
+                (SELECT COUNT(*) FROM seguimientos WHERE id_usuario = %s) AS seguidos_count
+        """, (usuario_id, usuario_id, usuario_id))
+        stats = cursor.fetchone()
+        
+        # Procesar URLs de imágenes en publicaciones
+        for pub in publicaciones:
+            if pub['imagen_url'] and not pub['imagen_url'].startswith('http'):
+                pub['imagen_url'] = f"http://localhost:5000{pub['imagen_url']}"
+        
+        # Procesar URLs de imágenes en productos
+        for prod in productos:
+            if prod['imagen_url'] and not prod['imagen_url'].startswith('http'):
+                prod['imagen_url'] = f"http://localhost:5000{prod['imagen_url']}"
+        
+        # Procesar imagen de perfil
+        if usuario['imagen_perfil_url'] and not usuario['imagen_perfil_url'].startswith('http'):
+            usuario['imagen_perfil_url'] = f"http://localhost:5000{usuario['imagen_perfil_url']}"
+        
+        # Agregar estadísticas al usuario
+        usuario['publicaciones_count'] = stats['publicaciones_count'] if stats else 0
+        usuario['seguidores_count'] = stats['seguidores_count'] if stats else 0
+        usuario['seguidos_count'] = stats['seguidos_count'] if stats else 0
+        
+        perfil = {
+            "success": True,
+            "usuario": usuario,
+            "publicaciones": publicaciones,
+            "productos": productos,
+            "comentarios": comentarios
+        }
+        
+        print("[PERFIL GET] Respondiendo con exito")
+        return jsonify(perfil), 200
+        
+    except Exception as e:
+        print(f"[PERFIL GET] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.route('/api/perfil/<int:usuario_id>', methods=['PUT'])
+def actualizar_perfil(usuario_id):
+    """Actualiza los datos del perfil de un usuario"""
+    try:
+        nombre = request.form.get('nombre')
+        imagen = request.files.get('imagen')
+        
+        if not nombre:
+            return jsonify({"success": False, "message": "El nombre es requerido"}), 400
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        imagen_url = None
+        
+        # Actualizar nombre del usuario
+        cursor.execute("""
+            UPDATE usuarios
+            SET nombre = %s
+            WHERE id = %s
+        """, (nombre, usuario_id))
+        
+        # Si hay imagen, guardarla
+        if imagen:
+            filename = secure_filename(imagen.filename)
+            import uuid
+            nombre_unico = f"{uuid.uuid4()}_{filename}"
+            ruta = os.path.join(app.config['UPLOAD_FOLDER'], nombre_unico)
+            imagen.save(ruta)
+            imagen_url = f"/uploads/{nombre_unico}"
+            
+            # Primero, desmarcar todas las imágenes anteriores como no principales
+            cursor.execute("""
+                UPDATE imagenes_perfil
+                SET es_principal = 0
+                WHERE id_usuario = %s
+            """, (usuario_id,))
+            
+            # Guardar la nueva imagen en la tabla imagenes_perfil
+            cursor.execute("""
+                INSERT INTO imagenes_perfil (id_usuario, url, es_principal)
+                VALUES (%s, %s, 1)
+                ON DUPLICATE KEY UPDATE url = %s
+            """, (usuario_id, imagen_url, imagen_url))
+            
+            # Actualizar la columna imagen_perfil_url en usuarios
+            cursor.execute("""
+                UPDATE usuarios
+                SET imagen_perfil_url = %s, fecha_actualizacion = NOW()
+                WHERE id = %s
+            """, (imagen_url, usuario_id))
+            
+            print(f"[PERFIL] Imagen guardada en: {imagen_url}")
+        else:
+            # Actualizar solo la fecha de actualizacion
+            cursor.execute("""
+                UPDATE usuarios
+                SET fecha_actualizacion = NOW()
+                WHERE id = %s
+            """, (usuario_id,))
+        
+        connection.commit()
+        
+        # Obtener datos actualizados del usuario
+        cursor.execute("""
+            SELECT id, nombre, usuario, email, numero_contacto, documento, 
+                   fecha_registro, imagen_perfil_url
+            FROM usuarios
+            WHERE id = %s
+        """, (usuario_id,))
+        usuario_actualizado = cursor.fetchone()
+        
+        print(f"[PERFIL] Usuario actualizado, imagen: {usuario_actualizado['imagen_perfil_url']}")
+        
+        cursor.close()
+        connection.close()
+        
+        return jsonify({
+            "success": True,
+            "message": "Perfil actualizado correctamente",
+            "usuario": {
+                "id": usuario_actualizado['id'],
+                "nombre": usuario_actualizado['nombre'],
+                "usuario": usuario_actualizado['usuario'],
+                "email": usuario_actualizado['email'],
+                "numero_contacto": usuario_actualizado['numero_contacto'],
+                "documento": usuario_actualizado['documento'],
+                "fecha_registro": usuario_actualizado['fecha_registro'],
+                "imagen_url": usuario_actualizado['imagen_perfil_url']
+            }
+        }), 200
+    except Exception as e:
+        print(f"[PERFIL] Error al actualizar: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+# ===== ENDPOINTS PARA GESTIÓN DE PUBLICACIONES =====
+
+@app.route('/api/publicaciones/<int:publicacion_id>', methods=['PUT'])
+def editar_publicacion(publicacion_id):
+    """Edita una publicación existente"""
+    try:
+        data = request.form
+        titulo = data.get('titulo')
+        contenido = data.get('contenido')
+        imagen = request.files.get('imagen')
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión"}), 500
+        
+        cursor = connection.cursor()
+        
+        # Verificar que la publicación existe
+        cursor.execute("SELECT id_autor FROM publicaciones WHERE id = %s", (publicacion_id,))
+        pub = cursor.fetchone()
+        
+        if not pub:
+            return jsonify({"success": False, "message": "Publicación no encontrada"}), 404
+        
+        # Actualizar publicación
+        cursor.execute("""
+            UPDATE publicaciones
+            SET titulo = %s, contenido = %s
+            WHERE id = %s
+        """, (titulo, contenido, publicacion_id))
+        
+        # Si hay imagen, guardarla
+        if imagen:
+            filename = secure_filename(imagen.filename)
+            nombre_unico = f"{uuid.uuid4()}_{filename}"
+            ruta = os.path.join(app.config['UPLOAD_FOLDER'], nombre_unico)
+            imagen.save(ruta)
+            imagen_url = f"/uploads/{nombre_unico}"
+            
+            # Eliminar imagen anterior si existe
+            cursor.execute("SELECT url FROM imagenes_publicacion WHERE id_publicacion = %s", (publicacion_id,))
+            imagen_anterior = cursor.fetchone()
+            if imagen_anterior:
+                cursor.execute("DELETE FROM imagenes_publicacion WHERE id_publicacion = %s", (publicacion_id,))
+            
+            # Guardar nueva imagen
+            cursor.execute("""
+                INSERT INTO imagenes_publicacion (id_publicacion, url)
+                VALUES (%s, %s)
+            """, (publicacion_id, imagen_url))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({"success": True, "message": "Publicación actualizada"}), 200
+        
+    except Exception as e:
+        print(f"[PUBLICACIONES] Error al editar: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/publicaciones/<int:publicacion_id>', methods=['DELETE'])
+def eliminar_publicacion(publicacion_id):
+    """Elimina una publicación"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión"}), 500
+        
+        cursor = connection.cursor()
+        
+        # Obtener imagen para eliminar del servidor
+        cursor.execute("SELECT url FROM imagenes_publicacion WHERE id_publicacion = %s", (publicacion_id,))
+        imagen = cursor.fetchone()
+        
+        if imagen:
+            # Extraer nombre del archivo
+            filename = imagen[0].split('/')[-1]
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # Intentar eliminar archivo
+            try:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            except:
+                pass
+            
+            cursor.execute("DELETE FROM imagenes_publicacion WHERE id_publicacion = %s", (publicacion_id,))
+        
+        # Eliminar reacciones/comentarios
+        cursor.execute("DELETE FROM reacciones WHERE id_publicacion = %s", (publicacion_id,))
+        
+        # Eliminar publicación
+        cursor.execute("DELETE FROM publicaciones WHERE id = %s", (publicacion_id,))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({"success": True, "message": "Publicación eliminada"}), 200
+        
+    except Exception as e:
+        print(f"[PUBLICACIONES] Error al eliminar: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/publicaciones/<int:publicacion_id>/fijar', methods=['POST'])
+def fijar_publicacion(publicacion_id):
+    """Fija una publicación (marca como destacada)"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión"}), 500
+        
+        cursor = connection.cursor()
+        
+        # Actualizar estado de fijación
+        cursor.execute("""
+            UPDATE publicaciones
+            SET fijada = IF(fijada = 1, 0, 1)
+            WHERE id = %s
+        """, (publicacion_id,))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({"success": True, "message": "Publicación actualizada"}), 200
+        
+    except Exception as e:
+        print(f"[PUBLICACIONES] Error al fijar: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/api/publicaciones/<int:publicacion_id>/denunciar', methods=['POST'])
+def denunciar_publicacion(publicacion_id):
+    """Denuncia una publicación"""
+    try:
+        data = request.get_json()
+        motivo = data.get('motivo', 'Sin especificar')
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión"}), 500
+        
+        cursor = connection.cursor()
+        
+        # Crear tabla de denuncias si no existe
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS denuncias (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                id_publicacion INT NOT NULL,
+                motivo VARCHAR(255),
+                fecha_denuncia TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (id_publicacion) REFERENCES publicaciones(id)
+            )
+        """)
+        
+        # Guardar denuncia
+        cursor.execute("""
+            INSERT INTO denuncias (id_publicacion, motivo)
+            VALUES (%s, %s)
+        """, (publicacion_id, motivo))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({"success": True, "message": "Denuncia registrada"}), 200
+        
+    except Exception as e:
+        print(f"[PUBLICACIONES] Error al denunciar: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/seguir/<int:usuario_id_a_seguir>', methods=['POST'])
+def seguir_usuario(usuario_id_a_seguir):
+    """Permite que un usuario siga a otro"""
+    try:
+        data = request.get_json()
+        id_usuario = data.get('id_usuario')
+        
+        if not id_usuario or not usuario_id_a_seguir:
+            return jsonify({"success": False, "message": "IDs requeridos"}), 400
+        
+        if id_usuario == usuario_id_a_seguir:
+            return jsonify({"success": False, "message": "No puedes seguirte a ti mismo"}), 400
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO seguimientos (id_usuario, id_seguido)
+                VALUES (%s, %s)
+            """, (id_usuario, usuario_id_a_seguir))
+            connection.commit()
+            
+            print(f"[SEGUIR] Usuario {id_usuario} ahora sigue a {usuario_id_a_seguir}")
+            
+            return jsonify({
+                "success": True,
+                "message": "Usuario seguido correctamente"
+            }, 200)
+        except Exception as e:
+            if "Duplicate entry" in str(e):
+                return jsonify({"success": False, "message": "Ya sigues a este usuario"}), 400
+            raise
+        finally:
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        print(f"[SEGUIR] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/dejar-seguir/<int:usuario_id>', methods=['POST'])
+def dejar_seguir_usuario(usuario_id):
+    """Permite que un usuario deje de seguir a otro"""
+    try:
+        data = request.get_json()
+        id_usuario = data.get('id_usuario')
+        
+        if not id_usuario or not usuario_id:
+            return jsonify({"success": False, "message": "IDs requeridos"}), 400
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor()
+        try:
+            cursor.execute("""
+                DELETE FROM seguimientos
+                WHERE id_usuario = %s AND id_seguido = %s
+            """, (id_usuario, usuario_id))
+            connection.commit()
+            
+            if cursor.rowcount == 0:
+                return jsonify({"success": False, "message": "No seguias a este usuario"}), 400
+            
+            print(f"[DEJAR-SEGUIR] Usuario {id_usuario} dejo de seguir a {usuario_id}")
+            
+            return jsonify({
+                "success": True,
+                "message": "Dejas de seguir al usuario"
+            }, 200)
+        finally:
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        print(f"[DEJAR-SEGUIR] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/verificar-seguimiento/<int:usuario_id>', methods=['GET'])
+def verificar_seguimiento(usuario_id):
+    """Verifica si un usuario sigue a otro"""
+    try:
+        id_usuario = request.args.get('id_usuario')
+        
+        if not id_usuario or not usuario_id:
+            return jsonify({"success": False, "message": "IDs requeridos"}), 400
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            cursor.execute("""
+                SELECT id FROM seguimientos
+                WHERE id_usuario = %s AND id_seguido = %s
+            """, (id_usuario, usuario_id))
+            resultado = cursor.fetchone()
+            
+            return jsonify({
+                "success": True,
+                "siguiendo": resultado is not None
+            }), 200
+        finally:
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        print(f"[VERIFICAR-SEGUIMIENTO] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/obtener-seguimientos/<int:usuario_id>', methods=['GET'])
+def obtener_seguimientos(usuario_id):
+    """Obtiene los usuarios que sigue y sus seguidores"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            # Usuarios que sigue
+            cursor.execute("""
+                SELECT u.id, u.nombre, u.imagen_perfil_url
+                FROM seguimientos s
+                JOIN usuarios u ON s.id_seguido = u.id
+                WHERE s.id_usuario = %s
+                ORDER BY s.fecha_seguimiento DESC
+            """, (usuario_id,))
+            siguiendo = cursor.fetchall()
+            
+            # Seguidores
+            cursor.execute("""
+                SELECT u.id, u.nombre, u.imagen_perfil_url
+                FROM seguimientos s
+                JOIN usuarios u ON s.id_usuario = u.id
+                WHERE s.id_seguido = %s
+                ORDER BY s.fecha_seguimiento DESC
+            """, (usuario_id,))
+            seguidores = cursor.fetchall()
+            
+            # Feed personalizado (publicaciones de usuarios que sigue)
+            cursor.execute("""
+                SELECT p.id, p.titulo, p.contenido, p.fecha_publicacion, u.nombre AS autor, 
+                       u.id AS id_autor, u.imagen_perfil_url AS imagen_perfil,
+                       (SELECT url FROM imagenes_publicacion WHERE id_publicacion = p.id LIMIT 1) AS imagen_url,
+                       (SELECT COUNT(*) FROM reacciones WHERE id_publicacion = p.id) AS total_reacciones
+                FROM publicaciones p
+                JOIN usuarios u ON p.id_autor = u.id
+                WHERE u.id IN (
+                    SELECT id_seguido FROM seguimientos WHERE id_usuario = %s
+                ) OR u.id = %s
+                AND p.estado_aprobacion = 'aprobado'
+                ORDER BY p.fecha_publicacion DESC
+                LIMIT 50
+            """, (usuario_id, usuario_id))
+            feed_personalizado = cursor.fetchall()
+            
+            # Procesar URLs de imágenes en feed
+            for pub in feed_personalizado:
+                if pub['imagen_url'] and not pub['imagen_url'].startswith('http'):
+                    pub['imagen_url'] = f"http://localhost:5000{pub['imagen_url']}"
+                if pub['imagen_perfil'] and not pub['imagen_perfil'].startswith('http'):
+                    pub['imagen_perfil'] = f"http://localhost:5000{pub['imagen_perfil']}"
+            
+            return jsonify({
+                "success": True,
+                "siguiendo": siguiendo,
+                "seguidores": seguidores,
+                "total_siguiendo": len(siguiendo) if siguiendo else 0,
+                "total_seguidores": len(seguidores) if seguidores else 0,
+                "feed_personalizado": feed_personalizado
+            }), 200
+        finally:
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        print(f"[OBTENER-SEGUIMIENTOS] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/sugerencias-seguir/<int:usuario_id>', methods=['GET'])
+def obtener_sugerencias_seguir(usuario_id):
+    """Obtiene sugerencias de usuarios a seguir"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            # Usuarios populares que no sigue
+            cursor.execute("""
+                SELECT u.id, u.nombre, u.imagen_perfil_url,
+                       (SELECT COUNT(*) FROM seguimientos WHERE id_seguido = u.id) AS total_seguidores
+                FROM usuarios u
+                WHERE u.id NOT IN (
+                    SELECT id_seguido FROM seguimientos WHERE id_usuario = %s
+                ) AND u.id != %s
+                ORDER BY total_seguidores DESC
+                LIMIT 10
+            """, (usuario_id, usuario_id))
+            sugerencias = cursor.fetchall()
+            
+            return jsonify({
+                "success": True,
+                "sugerencias": sugerencias
+            }), 200
+        finally:
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        print(f"[SUGERENCIAS-SEGUIR] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/estadisticas-usuario/<int:usuario_id>', methods=['GET'])
+def obtener_estadisticas_usuario(usuario_id):
+    """Obtiene estadisticas del usuario (seguidores, publicaciones, etc)"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            # Total de seguidores
+            cursor.execute("""
+                SELECT COUNT(*) as total FROM seguimientos WHERE id_seguido = %s
+            """, (usuario_id,))
+            total_seguidores = cursor.fetchone()['total'] or 0
+            
+            # Total que sigue
+            cursor.execute("""
+                SELECT COUNT(*) as total FROM seguimientos WHERE id_usuario = %s
+            """, (usuario_id,))
+            total_siguiendo = cursor.fetchone()['total'] or 0
+            
+            # Total publicaciones
+            cursor.execute("""
+                SELECT COUNT(*) as total FROM publicaciones 
+                WHERE id_autor = %s AND estado_aprobacion = 'aprobado'
+            """, (usuario_id,))
+            total_publicaciones = cursor.fetchone()['total'] or 0
+            
+            # Total reacciones recibidas
+            cursor.execute("""
+                SELECT COUNT(*) as total FROM reacciones r
+                JOIN publicaciones p ON r.id_publicacion = p.id
+                WHERE p.id_autor = %s
+            """, (usuario_id,))
+            total_reacciones = cursor.fetchone()['total'] or 0
+            
+            return jsonify({
+                "success": True,
+                "estadisticas": {
+                    "total_seguidores": total_seguidores,
+                    "total_siguiendo": total_siguiendo,
+                    "total_publicaciones": total_publicaciones,
+                    "total_reacciones": total_reacciones
+                }
+            }), 200
+        finally:
+            cursor.close()
+            connection.close()
+    except Exception as e:
+        print(f"[ESTADISTICAS-USUARIO] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+def add_base_url_to_images(data, image_field='imagen_url'):
+    """Agrega la URL base a las imágenes si no la tienen"""
+    if isinstance(data, dict):
+        if image_field in data and data[image_field]:
+            if not data[image_field].startswith('http'):
+                data[image_field] = f"http://localhost:5000{data[image_field]}"
+    elif isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict):
+                if image_field in item and item[image_field]:
+                    if not item[image_field].startswith('http'):
+                        item[image_field] = f"http://localhost:5000{item[image_field]}"
+    return data
+
+@app.route('/api/usuarios-disponibles', methods=['GET'])
+def obtener_usuarios_disponibles():
+    """Obtiene usuarios que se siguen mutuamente con el usuario actual"""
+    usuario_id = request.args.get('usuario_id')
+    
+    if not usuario_id:
+        return jsonify({"success": False, "message": "usuario_id requerido"}), 400
+    
+    connection = get_db_connection()
+    if not connection:
+        return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+    
+    cursor = connection.cursor(dictionary=True)
+    try:
+        # Obtener usuarios que se siguen mutuamente
+        cursor.execute("""
+            SELECT DISTINCT u.id, u.nombre, u.imagen_perfil_url
+            FROM usuarios u
+            WHERE u.id != %s
+            AND EXISTS (
+                SELECT 1 FROM seguimientos s1 
+                WHERE s1.id_usuario = %s AND s1.id_seguido = u.id
+            )
+            AND EXISTS (
+                SELECT 1 FROM seguimientos s2 
+                WHERE s2.id_usuario = u.id AND s2.id_seguido = %s
+            )
+            ORDER BY u.nombre ASC
+        """, (usuario_id, usuario_id, usuario_id))
+        
+        usuarios = cursor.fetchall()
+        
+        # Procesar URLs de imágenes
+        for usuario in usuarios:
+            if usuario['imagen_perfil_url'] and not usuario['imagen_perfil_url'].startswith('http'):
+                usuario['imagen_perfil_url'] = f"http://localhost:5000{usuario['imagen_perfil_url']}"
+        
+        return jsonify({"success": True, "usuarios": usuarios}), 200
+    except Exception as e:
+        print(f"[USUARIOS] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": str(e)}), 500
+    finally:
+        cursor.close()
+        connection.close()
+        
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
 

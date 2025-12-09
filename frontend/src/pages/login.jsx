@@ -17,8 +17,11 @@ function Login() {
       return;
     }
     const res = await login({ identificador, contrasena });
-    if (res.exito && res.usuario && res.usuario.nombre) {
+    if (res.exito && res.usuario) {
+      // Guardar usuario completo en localStorage
+      localStorage.setItem("usuario", JSON.stringify(res.usuario));
       localStorage.setItem("nombreUsuario", res.usuario.nombre);
+      console.log("Usuario guardado:", res.usuario);
       setTimeout(() => {
         navigate("/home");
       }, 1200);

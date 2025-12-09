@@ -8,6 +8,7 @@ import Privacidad from "./pages/privacidad.jsx";
 import Registro from "./pages/register.jsx";
 import Terminos from "./pages/terminos.jsx";
 import Tienda from "./pages/tienda.jsx";
+import PerfilPagina from "./pages/PerfilPagina.jsx";
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
         <Route path="/register" element={<Registro />} />
         <Route path="/terminos" element={<Terminos />} />
         <Route path="/tienda" element={<Tienda />} />
+        <Route path="/PerfilPagina" element={<PerfilPagina />} />
+        <Route path="/PerfilPagina/:id" element={<PerfilPagina />} />
       </Routes>
     </BrowserRouter>
   );

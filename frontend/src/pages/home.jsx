@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePublicaciones } from "../hooks/usePublicaciones";
+import { getChats } from "../services/chatsService";
+import { obtenerPerfil } from "../services/perfilService";
 import "../services/styles/home.css";
 
 function Home() {
   const [nombreUsuario, setNombreUsuario] = useState("Usuario");
+  const [imagenPerfil, setImagenPerfil] = useState("https://via.placeholder.com/80");
+  const [chats, setChats] = useState([]);
+  const [usuarioActual, setUsuarioActual] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [texto, setTexto] = useState("");
   const [imagen, setImagen] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [cargandoChats, setCargandoChats] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -20,13 +27,61 @@ function Home() {
   } = usePublicaciones();
 
   useEffect(() => {
-    const nombre = localStorage.getItem("nombreUsuario");
-    if (nombre) setNombreUsuario(nombre);
-    cargarPublicaciones();
+    const cargarDatos = async () => {
+      try {
+        // Obtener usuario del localStorage
+        const usuarioJSON = localStorage.getItem("usuario");
+        if (!usuarioJSON) {
+          navigate("/login");
+          return;
+        }
+
+        const usuario = JSON.parse(usuarioJSON);
+        setUsuarioActual(usuario);
+        setNombreUsuario(usuario.nombre);
+
+        // Cargar datos del perfil
+        try {
+          const datosPerfil = await obtenerPerfil(usuario.id);
+          if (datosPerfil.success && datosPerfil.usuario.imagen_perfil_url) {
+            setImagenPerfil(`http://localhost:5000${datosPerfil.usuario.imagen_perfil_url}`);
+          }
+        } catch (error) {
+          console.error("Error al cargar perfil:", error);
+        }
+
+        // Cargar chats
+        cargarChatsUsuario(usuario.id);
+
+        // Cargar publicaciones
+        cargarPublicaciones();
+      } catch (error) {
+        console.error("Error en cargarDatos:", error);
+        navigate("/login");
+      }
+    };
+
+    cargarDatos();
   }, []);
+
+  const cargarChatsUsuario = async (userId) => {
+    try {
+      setCargandoChats(true);
+      const datosChats = await getChats(userId);
+      if (datosChats.success) {
+        setChats(datosChats.chats || []);
+        console.log("[HOME] Chats cargados:", datosChats.chats);
+      }
+    } catch (error) {
+      console.error("[HOME] Error al cargar chats:", error);
+    } finally {
+      setCargandoChats(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("nombreUsuario");
+    localStorage.removeItem("usuario");
     navigate("/login");
   };
 
@@ -34,6 +89,7 @@ function Home() {
     setShowModal(true);
     setTexto("");
     setImagen(null);
+    setImagenPreview(null);
     setMensaje("");
   };
 
@@ -41,6 +97,7 @@ function Home() {
     setShowModal(false);
     setTexto("");
     setImagen(null);
+    setImagenPreview(null);
     setMensaje("");
   };
 
@@ -54,6 +111,23 @@ function Home() {
     setTimeout(() => {
       setShowModal(false);
     }, 1000);
+  };
+
+  const handleAbrirChat = (chat) => {
+    navigate("/chats", { state: { chatSeleccionado: chat } });
+  };
+
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Filtrado de publicaciones por búsqueda
@@ -70,8 +144,11 @@ function Home() {
         <div id="user-profile-container" className="profile-visible">
           <img
             id="profile-image"
-            src="https://via.placeholder.com/60"
+            src={imagenPerfil}
             alt="Foto de perfil"
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/80";
+            }}
           />
           <div className="user-info">
             <h2 id="user-name">{nombreUsuario}</h2>
@@ -81,7 +158,7 @@ function Home() {
         <nav className="sidebar-nav">
           <ul>
             <li>
-              <a href="#" className="nav-item">
+              <a href="/PerfilPagina" className="nav-item">
                 <i className="fa-solid fa-user"></i>
                 <span>Perfil</span>
               </a>
@@ -138,12 +215,44 @@ function Home() {
                   className="modal-textarea"
                   rows={3}
                 />
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={(e) => setImagen(e.target.files[0])}
-                  className="modal-file"
-                />
+                <div className="modal-file-section">
+                  <label htmlFor="file-input" className="modal-file-label">
+                    <i className="fa-solid fa-paperclip"></i> Seleccionar archivo
+                  </label>
+                  <input
+                    id="file-input"
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleImagenChange}
+                    className="modal-file"
+                  />
+                  {imagen && <span className="modal-file-name">{imagen.name}</span>}
+                </div>
+
+                {imagenPreview && (
+                  <div className="modal-preview">
+                    <div className="preview-header">
+                      <span>Vista Previa</span>
+                      <button 
+                        type="button"
+                        className="preview-close"
+                        onClick={() => {
+                          setImagen(null);
+                          setImagenPreview(null);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {imagen.type.startsWith('image/') ? (
+                      <img src={imagenPreview} alt="Preview" className="preview-image" />
+                    ) : (
+                      <div className="preview-video">
+                        <video src={imagenPreview} controls className="preview-video-player" />
+                      </div>
+                    )}
+                  </div>
+                )}
                 <button type="submit" className="modal-publicar-btn">
                   Publicar
                 </button>
@@ -165,35 +274,51 @@ function Home() {
               No hay publicaciones para mostrar.
             </div>
           )}
-          {publicacionesFiltradas.map((pub) => (
-            <section className="post-card" key={pub.id}>
-              <div className="post-header">
-                <img
-                  src="https://via.placeholder.com/40"
-                  alt={`Foto de perfil de ${pub.autor}`}
-                />
-                <div className="post-info">
-                  <h3>{pub.autor}</h3>
-                  <span>{pub.fecha_publicacion}</span>
-                </div>
-              </div>
-              <div className="post-body">
-                <h4>{pub.titulo}</h4>
-                <p>{pub.contenido}</p>
-                {pub.imagen_url && (
+          {publicacionesFiltradas.map((pub) => {
+            const imagenAutor = pub.imagen_perfil 
+              ? pub.imagen_perfil
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(pub.autor)}&background=random&color=fff&size=40`;
+
+            return (
+              <section className="post-card" key={pub.id}>
+                <div className="post-header">
                   <img
-                    src={`http://localhost:5000${pub.imagen_url}`}
-                    alt="Imagen de la publicación"
-                    style={{
-                      maxWidth: "100%",
-                      borderRadius: "8px",
-                      marginTop: "10px",
+                    src={imagenAutor}
+                    alt={`Foto de perfil de ${pub.autor}`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/PerfilPagina/${pub.id_autor}`)}
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(pub.autor)}&background=random&color=fff&size=40`;
                     }}
                   />
-                )}
-              </div>
-            </section>
-          ))}
+                  <div className="post-info">
+                    <h3 
+                      style={{ cursor: 'pointer', color: '#0066cc' }}
+                      onClick={() => navigate(`/PerfilPagina/${pub.id_autor}`)}
+                    >
+                      {pub.autor}
+                    </h3>
+                    <span>{pub.fecha_publicacion}</span>
+                  </div>
+                </div>
+                <div className="post-body">
+                  <h4>{pub.titulo}</h4>
+                  <p>{pub.contenido}</p>
+                  {pub.imagen_url && (
+                    <img
+                      src={pub.imagen_url}
+                      alt="Imagen de la publicacion"
+                      style={{
+                        maxWidth: "100%",
+                        borderRadius: "8px",
+                        marginTop: "10px",
+                      }}
+                    />
+                  )}
+                </div>
+              </section>
+            );
+          })}
         </div>
       </main>
 
@@ -203,36 +328,36 @@ function Home() {
           <input type="text" placeholder="Buscar chats..." />
         </div>
         <div className="chat-list">
-          <div className="chat-item">
-            <img
-              src="https://via.placeholder.com/50"
-              alt="Foto de perfil de Helena Hills"
-            />
-            <div className="chat-info">
-              <h5>Helena Hills</h5>
-              <p>Will head to the Help Center...</p>
+          {cargandoChats ? (
+            <div style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+              Cargando chats...
             </div>
-          </div>
-          <div className="chat-item">
-            <img
-              src="https://via.placeholder.com/50"
-              alt="Foto de perfil de Carlo Emilie"
-            />
-            <div className="chat-info">
-              <h5>Carlo Emilie</h5>
-              <p>Let's go</p>
+          ) : chats.length > 0 ? (
+            chats.map((chat) => (
+              <div 
+                key={chat.id_contacto} 
+                className="chat-item"
+                onClick={() => handleAbrirChat(chat)}
+              >
+                <img
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(chat.nombre_contacto)}&background=random&color=fff&size=45`}
+                  alt={`Foto de perfil de ${chat.nombre_contacto}`}
+                />
+                <div className="chat-info">
+                  <h5>{chat.nombre_contacto}</h5>
+                  <p>
+                    {chat.ultima_interaccion
+                      ? new Date(chat.ultima_interaccion).toLocaleDateString()
+                      : "Sin mensajes"}
+                  </p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div style={{ textAlign: "center", padding: "20px", color: "#888" }}>
+              Sin chats aún
             </div>
-          </div>
-          <div className="chat-item">
-            <img
-              src="https://via.placeholder.com/50"
-              alt="Foto de perfil de Oscar Davis"
-            />
-            <div className="chat-info">
-              <h5>Oscar Davis</h5>
-              <p>Awesome</p>
-            </div>
-          </div>
+          )}
         </div>
       </aside>
     </div>
