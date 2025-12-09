@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 10-11-2025 a las 12:18:06
+-- Tiempo de generación: 09-12-2025 a las 14:11:14
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -71,6 +71,17 @@ CREATE TABLE `chats` (
   `fecha_envio` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Volcado de datos para la tabla `chats`
+--
+
+INSERT INTO `chats` (`id`, `id_emisor`, `id_receptor`, `mensaje`, `fecha_envio`) VALUES
+(1, 13, 19, 'Hola pablo', '2025-12-08 18:13:51'),
+(2, 19, 13, 'Hola Juan', '2025-12-08 18:14:26'),
+(3, 19, 13, 'Como va todo?', '2025-12-08 18:14:47'),
+(4, 19, 13, 'Bien?', '2025-12-08 18:20:56'),
+(5, 19, 13, 'Todo bien?', '2025-12-08 18:23:18');
+
 -- --------------------------------------------------------
 
 --
@@ -84,6 +95,28 @@ CREATE TABLE `detalle_venta` (
   `cantidad` int(11) NOT NULL,
   `precio_unitario` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `imagenes_perfil`
+--
+
+CREATE TABLE `imagenes_perfil` (
+  `id` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `url` varchar(500) NOT NULL,
+  `fecha_subida` datetime DEFAULT current_timestamp(),
+  `es_principal` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `imagenes_perfil`
+--
+
+INSERT INTO `imagenes_perfil` (`id`, `id_usuario`, `url`, `fecha_subida`, `es_principal`) VALUES
+(1, 13, '/uploads/cd94d1c0-e684-419a-9ed5-b3a0d412e440_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:39:57', 0),
+(2, 13, '/uploads/abce9412-f674-4441-8de8-404637718c91_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:50:34', 1);
 
 -- --------------------------------------------------------
 
@@ -115,7 +148,8 @@ CREATE TABLE `imagenes_publicacion` (
 
 INSERT INTO `imagenes_publicacion` (`id`, `id_publicacion`, `url`) VALUES
 (1, 2, '/uploads/The-Sludgification-Of-Music-Business-503493283.webp'),
-(2, 3, '/uploads/The-Sludgification-Of-Music-Business-503493283.webp');
+(2, 3, '/uploads/The-Sludgification-Of-Music-Business-503493283.webp'),
+(3, 10, '/uploads/35889ac151f32e3f6293999f368a5fa0.jpg');
 
 -- --------------------------------------------------------
 
@@ -160,6 +194,7 @@ CREATE TABLE `publicaciones` (
   `contenido` text DEFAULT NULL,
   `fecha_publicacion` datetime DEFAULT current_timestamp(),
   `estado_aprobacion` enum('pendiente','aprobado','rechazado') DEFAULT 'pendiente',
+  `fijada` int(11) DEFAULT 0,
   `vistas` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -167,10 +202,16 @@ CREATE TABLE `publicaciones` (
 -- Volcado de datos para la tabla `publicaciones`
 --
 
-INSERT INTO `publicaciones` (`id`, `id_autor`, `titulo`, `tipo`, `contenido`, `fecha_publicacion`, `estado_aprobacion`, `vistas`) VALUES
-(1, 13, ':d', 'texto', ':d', '2025-10-06 15:42:39', 'aprobado', 0),
-(2, 13, ':D', 'imagen', ':D', '2025-10-06 15:42:49', 'aprobado', 0),
-(3, 19, 'Hola', 'imagen', 'Hola', '2025-10-06 21:01:32', 'aprobado', 0);
+INSERT INTO `publicaciones` (`id`, `id_autor`, `titulo`, `tipo`, `contenido`, `fecha_publicacion`, `estado_aprobacion`, `fijada`, `vistas`) VALUES
+(1, 13, ':d', 'texto', ':d', '2025-10-06 15:42:39', 'aprobado', 0, 0),
+(2, 13, ':D', 'imagen', ':D', '2025-10-06 15:42:49', 'aprobado', 0, 0),
+(3, 19, 'Hola', 'imagen', 'Hola', '2025-10-06 21:01:32', 'aprobado', 0, 0),
+(5, 19, 'a', 'texto', 'a', '2025-12-08 15:48:36', 'aprobado', 0, 0),
+(6, 19, 'b', 'texto', 'b', '2025-12-08 15:48:40', 'aprobado', 0, 0),
+(7, 19, 'c', 'texto', 'c', '2025-12-08 15:48:43', 'aprobado', 0, 0),
+(8, 19, 'd', 'texto', 'd', '2025-12-08 15:48:45', 'aprobado', 0, 0),
+(9, 19, 'e', 'texto', 'e', '2025-12-08 15:48:49', 'aprobado', 0, 0),
+(10, 13, ':v', 'imagen', ':v', '2025-12-08 17:41:20', 'aprobado', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -226,6 +267,27 @@ INSERT INTO `roles` (`id`, `nombre`, `descripcion`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `seguimientos`
+--
+
+CREATE TABLE `seguimientos` (
+  `id` int(11) NOT NULL,
+  `id_usuario` int(11) NOT NULL,
+  `id_seguido` int(11) NOT NULL,
+  `fecha_seguimiento` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `seguimientos`
+--
+
+INSERT INTO `seguimientos` (`id`, `id_usuario`, `id_seguido`, `fecha_seguimiento`) VALUES
+(1, 13, 19, '2025-12-08 15:47:26'),
+(2, 19, 13, '2025-12-08 15:48:20');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -238,17 +300,19 @@ CREATE TABLE `usuarios` (
   `numero_contacto` varchar(20) DEFAULT NULL,
   `documento` varchar(50) DEFAULT NULL,
   `id_rol` int(11) NOT NULL,
-  `fecha_registro` datetime DEFAULT current_timestamp()
+  `fecha_registro` datetime DEFAULT current_timestamp(),
+  `imagen_perfil_url` varchar(500) DEFAULT NULL,
+  `fecha_actualizacion` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `nombre`, `usuario`, `email`, `contrasena`, `numero_contacto`, `documento`, `id_rol`, `fecha_registro`) VALUES
-(13, 'Juan', 'Juan123', 'juan234@gmail.com', '123456', '123456', '123456', 1, '2025-10-06 15:25:59'),
-(18, 'Maria', 'Maria123', 'mariap@gmail.com', '123456', '103368854', '58796541', 1, '2025-10-06 20:50:45'),
-(19, 'Pablo ', 'Pablo1', 'pablo123@gmail.com', '123456', '10685496471', '10236885485', 1, '2025-10-06 21:00:42');
+INSERT INTO `usuarios` (`id`, `nombre`, `usuario`, `email`, `contrasena`, `numero_contacto`, `documento`, `id_rol`, `fecha_registro`, `imagen_perfil_url`, `fecha_actualizacion`) VALUES
+(13, 'Juan', 'Juan123', 'juan234@gmail.com', '123456', '123456', '123456', 1, '2025-10-06 15:25:59', '/uploads/abce9412-f674-4441-8de8-404637718c91_35889ac151f32e3f6293999f368a5fa0.jpg', '2025-12-08 14:50:34'),
+(18, 'Maria', 'Maria123', 'mariap@gmail.com', '123456', '103368854', '58796541', 1, '2025-10-06 20:50:45', NULL, '2025-12-08 14:43:00'),
+(19, 'Pablo ', 'Pablo1', 'pablo123@gmail.com', '123456', '10685496471', '10236885485', 1, '2025-10-06 21:00:42', NULL, '2025-12-08 14:43:00');
 
 -- --------------------------------------------------------
 
@@ -320,6 +384,13 @@ ALTER TABLE `detalle_venta`
   ADD KEY `id_producto` (`id_producto`);
 
 --
+-- Indices de la tabla `imagenes_perfil`
+--
+ALTER TABLE `imagenes_perfil`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_usuario` (`id_usuario`);
+
+--
 -- Indices de la tabla `imagenes_producto`
 --
 ALTER TABLE `imagenes_producto`
@@ -378,6 +449,15 @@ ALTER TABLE `roles`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indices de la tabla `seguimientos`
+--
+ALTER TABLE `seguimientos`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_seguimiento` (`id_usuario`,`id_seguido`),
+  ADD KEY `id_usuario` (`id_usuario`),
+  ADD KEY `id_seguido` (`id_seguido`);
+
+--
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -428,13 +508,19 @@ ALTER TABLE `categorias`
 -- AUTO_INCREMENT de la tabla `chats`
 --
 ALTER TABLE `chats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de la tabla `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `imagenes_perfil`
+--
+ALTER TABLE `imagenes_perfil`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `imagenes_producto`
@@ -446,7 +532,7 @@ ALTER TABLE `imagenes_producto`
 -- AUTO_INCREMENT de la tabla `imagenes_publicacion`
 --
 ALTER TABLE `imagenes_publicacion`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `metodos_pago`
@@ -464,7 +550,7 @@ ALTER TABLE `productos`
 -- AUTO_INCREMENT de la tabla `publicaciones`
 --
 ALTER TABLE `publicaciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `reacciones`
@@ -482,6 +568,12 @@ ALTER TABLE `resenas`
 -- AUTO_INCREMENT de la tabla `roles`
 --
 ALTER TABLE `roles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT de la tabla `seguimientos`
+--
+ALTER TABLE `seguimientos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
@@ -534,6 +626,12 @@ ALTER TABLE `detalle_venta`
   ADD CONSTRAINT `detalle_venta_ibfk_2` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id`);
 
 --
+-- Filtros para la tabla `imagenes_perfil`
+--
+ALTER TABLE `imagenes_perfil`
+  ADD CONSTRAINT `imagenes_perfil_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `imagenes_producto`
 --
 ALTER TABLE `imagenes_producto`
@@ -572,6 +670,13 @@ ALTER TABLE `resenas`
   ADD CONSTRAINT `resenas_ibfk_1` FOREIGN KEY (`id_venta`) REFERENCES `ventas` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `resenas_ibfk_2` FOREIGN KEY (`id_comprador`) REFERENCES `usuarios` (`id`),
   ADD CONSTRAINT `resenas_ibfk_3` FOREIGN KEY (`id_vendedor`) REFERENCES `usuarios` (`id`);
+
+--
+-- Filtros para la tabla `seguimientos`
+--
+ALTER TABLE `seguimientos`
+  ADD CONSTRAINT `seguimientos_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `seguimientos_ibfk_2` FOREIGN KEY (`id_seguido`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `usuarios`
