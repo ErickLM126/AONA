@@ -1,5 +1,5 @@
-    .login-form {
-      background: rgba(36,36,36,0.93);
+.login-form {
+      background: rgba(36, 36, 36, 0.93);
       border-radius: 16px;
       box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
       padding: 2.5em 2.5em 1.5em 2.5em;
@@ -37,7 +37,14 @@
       background: #232323;
       color: #fff;
       font-size: 1em;
-      margin-bottom: 0.2em;
+      box-sizing: border-box;
+    }
+    .input-group input::placeholder {
+      color: #999;
+    }
+    .input-group input:focus {
+      outline: none;
+      background: #2a2a2a;
     }
     .create-account-btn {
       width: 100%;
@@ -56,6 +63,10 @@
     .create-account-btn:hover {
       background: #e56a00;
     }
+    .create-account-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
     .separator {
       color: #aaa;
       margin: 1em 0 0.5em 0;
@@ -72,7 +83,7 @@
       font-weight: 700;
       margin-bottom: 1em;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
     .btn-text {
       margin: 0;
@@ -81,6 +92,10 @@
       color: #ccc;
       font-size: 0.9em;
       text-align: center;
+    }
+    .terms-text a {
+      color: #38a169;
+      text-decoration: none;
     }
     .header {
       position: absolute;

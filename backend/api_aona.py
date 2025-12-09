@@ -230,60 +230,52 @@ def get_productos():
 
 @app.route('/api/chats', methods=['GET'])
 def obtener_chats():
-    usuario_id = request.args.get('usuario_id')
-    
-    print(f"[CHATS] Solicitud recibida - usuario_id: {usuario_id}")
-    
-    if not usuario_id:
-        return jsonify({"success": False, "message": "usuario_id requerido"}), 400
-    
-    connection = get_db_connection()
-    if not connection:
-        print("[CHATS] Error: No se pudo conectar a la BD")
-        return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
-    
-    cursor = connection.cursor(dictionary=True)
+    """Obtiene los chats del usuario actual con último mensaje"""
     try:
-        # Obtener chats del usuario actual (conversaciones existentes)
+        usuario_id = request.args.get('usuario_id')
+        if not usuario_id:
+            return jsonify({"success": False, "message": "usuario_id requerido"}), 400
+        
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        
+        # Obtener contactos (usuarios con los que ha chateado)
         cursor.execute("""
             SELECT DISTINCT 
                 CASE 
-                    WHEN c.id_emisor = %s THEN c.id_receptor
-                    ELSE c.id_emisor
-                END AS id_contacto,
-                MAX(c.fecha_envio) AS ultima_interaccion
+                    WHEN id_emisor = %s THEN id_receptor 
+                    ELSE id_emisor 
+                END as id_contacto,
+                u.nombre as nombre_contacto,
+                u.imagen_perfil_url as imagen_contacto,
+                MAX(c.fecha_envio) as ultima_interaccion
             FROM chats c
+            JOIN usuarios u ON (
+                (c.id_emisor = %s AND u.id = c.id_receptor) OR
+                (c.id_receptor = %s AND u.id = c.id_emisor)
+            )
             WHERE c.id_emisor = %s OR c.id_receptor = %s
-            GROUP BY id_contacto
+            GROUP BY id_contacto, u.nombre, u.imagen_perfil_url
             ORDER BY ultima_interaccion DESC
-        """, (usuario_id, usuario_id, usuario_id))
+        """, (usuario_id, usuario_id, usuario_id, usuario_id, usuario_id))
         
-        contactos_ids = cursor.fetchall()
-        print(f"[CHATS] Contactos encontrados: {contactos_ids}")
+        chats = cursor.fetchall()
         
-        chats = []
-        for contacto in contactos_ids:
-            cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (contacto['id_contacto'],))
-            usuario_info = cursor.fetchone()
-            if usuario_info:
-                chat_data = {
-                    "id_contacto": usuario_info['id'],
-                    "nombre_contacto": usuario_info['nombre'],
-                    "ultima_interaccion": contacto['ultima_interaccion']
-                }
-                chats.append(chat_data)
-                print(f"[CHATS] Chat añadido: {chat_data}")
+        # Procesar URLs de imágenes
+        for chat in chats:
+            if chat['imagen_contacto'] and not chat['imagen_contacto'].startswith('http'):
+                chat['imagen_contacto'] = f"http://localhost:5000{chat['imagen_contacto']}"
         
-        print(f"[CHATS] Retornando {len(chats)} chats")
+        cursor.close()
+        connection.close()
+        
         return jsonify({"success": True, "chats": chats}), 200
     except Exception as e:
         print(f"[CHATS] Error: {e}")
-        import traceback
-        traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
-    finally:
-        cursor.close()
-        connection.close()
 
 @app.route('/api/chats/mensajes', methods=['GET'])
 def obtener_mensajes():
@@ -406,14 +398,11 @@ def obtener_perfil(usuario_id):
     """Obtiene los datos del perfil de un usuario"""
     try:
         print(f"[PERFIL GET] Iniciando - usuario_id: {usuario_id}")
-        
         connection = get_db_connection()
         if not connection:
             print("[PERFIL GET] Error: No se pudo conectar a la BD")
             return jsonify({"success": False, "message": "Error de conexion a la BD"}), 500
-        
         cursor = connection.cursor(dictionary=True)
-        
         # Obtener datos del usuario incluyendo imagen
         cursor.execute("""
             SELECT id, nombre, usuario, email, numero_contacto, documento, 
@@ -422,23 +411,20 @@ def obtener_perfil(usuario_id):
             WHERE id = %s
         """, (usuario_id,))
         usuario = cursor.fetchone()
-        
         if not usuario:
             print(f"[PERFIL GET] Usuario {usuario_id} no encontrado")
             return jsonify({"success": False, "message": "Usuario no encontrado"}), 404
-        
         print(f"[PERFIL GET] Usuario ID: {usuario['id']}")
-        
-        # Obtener publicaciones del usuario
+        # Obtener publicaciones del usuario incluyendo conteo de reacciones
         cursor.execute("""
             SELECT p.id, p.titulo, p.contenido, p.fecha_publicacion, p.tipo,
-                   (SELECT url FROM imagenes_publicacion WHERE id_publicacion = p.id LIMIT 1) AS imagen_url
+                   (SELECT url FROM imagenes_publicacion WHERE id_publicacion = p.id LIMIT 1) AS imagen_url,
+                   (SELECT COUNT(*) FROM reacciones WHERE id_publicacion = p.id) AS total_reacciones
             FROM publicaciones p
             WHERE p.id_autor = %s AND p.estado_aprobacion = 'aprobado'
             ORDER BY p.fecha_publicacion DESC
         """, (usuario_id,))
         publicaciones = cursor.fetchall()
-        
         # Obtener productos (sencillos musicales) del usuario
         cursor.execute("""
             SELECT p.id, p.nombre as titulo, p.descripcion,
@@ -449,19 +435,17 @@ def obtener_perfil(usuario_id):
             LIMIT 6
         """, (usuario_id,))
         productos = cursor.fetchall()
-        
-        # Obtener comentarios en publicaciones del usuario
+        # Obtener comentarios sobre publicaciones del usuario (desde tabla comentarios)
         cursor.execute("""
-            SELECT r.id, r.comentario, r.tipo, u.nombre as autor, u.id as autor_id
-            FROM reacciones r
-            JOIN usuarios u ON r.id_usuario = u.id
-            JOIN publicaciones p ON r.id_publicacion = p.id
-            WHERE p.id_autor = %s AND r.comentario IS NOT NULL
-            ORDER BY r.fecha DESC
+            SELECT c.id, c.comentario, u.nombre as autor, u.id as autor_id
+            FROM comentarios c
+            JOIN usuarios u ON c.id_usuario = u.id
+            JOIN publicaciones p ON c.id_publicacion = p.id
+            WHERE p.id_autor = %s
+            ORDER BY c.fecha DESC
             LIMIT 5
         """, (usuario_id,))
         comentarios = cursor.fetchall()
-        
         # Obtener estadísticas
         cursor.execute("""
             SELECT 
@@ -470,26 +454,20 @@ def obtener_perfil(usuario_id):
                 (SELECT COUNT(*) FROM seguimientos WHERE id_usuario = %s) AS seguidos_count
         """, (usuario_id, usuario_id, usuario_id))
         stats = cursor.fetchone()
-        
-        # Procesar URLs de imágenes en publicaciones
+        # Procesar URLs de imágenes en publicaciones y productos
         for pub in publicaciones:
             if pub['imagen_url'] and not pub['imagen_url'].startswith('http'):
                 pub['imagen_url'] = f"http://localhost:5000{pub['imagen_url']}"
-        
-        # Procesar URLs de imágenes en productos
         for prod in productos:
             if prod['imagen_url'] and not prod['imagen_url'].startswith('http'):
                 prod['imagen_url'] = f"http://localhost:5000{prod['imagen_url']}"
-        
         # Procesar imagen de perfil
         if usuario['imagen_perfil_url'] and not usuario['imagen_perfil_url'].startswith('http'):
             usuario['imagen_perfil_url'] = f"http://localhost:5000{usuario['imagen_perfil_url']}"
-        
         # Agregar estadísticas al usuario
         usuario['publicaciones_count'] = stats['publicaciones_count'] if stats else 0
         usuario['seguidores_count'] = stats['seguidores_count'] if stats else 0
         usuario['seguidos_count'] = stats['seguidos_count'] if stats else 0
-        
         perfil = {
             "success": True,
             "usuario": usuario,
@@ -497,18 +475,19 @@ def obtener_perfil(usuario_id):
             "productos": productos,
             "comentarios": comentarios
         }
-        
         print("[PERFIL GET] Respondiendo con exito")
         return jsonify(perfil), 200
-        
     except Exception as e:
         print(f"[PERFIL GET] Error: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
     finally:
-        cursor.close()
-        connection.close()
+        try:
+            cursor.close()
+            connection.close()
+        except:
+            pass
 
 @app.route('/api/perfil/<int:usuario_id>', methods=['PUT'])
 def actualizar_perfil(usuario_id):
@@ -1112,7 +1091,330 @@ def obtener_usuarios_disponibles():
     finally:
         cursor.close()
         connection.close()
-        
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
 
+@app.route('/api/reacciones/publicacion/<int:publicacion_id>', methods=['GET'])
+def obtener_reacciones_publicacion(publicacion_id):
+    """Devuelve conteo de reacciones por tipo y (opcional) reacción del usuario"""
+    usuario_id = request.args.get('usuario_id')
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT tipo, COUNT(*) as total
+            FROM reacciones
+            WHERE id_publicacion = %s
+            GROUP BY tipo
+        """, (publicacion_id,))
+        filas = cursor.fetchall()
+        conteo = {f['tipo']: f['total'] for f in filas}
+        user_reaction = None
+        if usuario_id:
+            cursor.execute("""
+                SELECT tipo FROM reacciones
+                WHERE id_publicacion = %s AND id_usuario = %s
+                LIMIT 1
+            """, (publicacion_id, usuario_id))
+            ur = cursor.fetchone()
+            if ur:
+                user_reaction = ur['tipo']
+        cursor.close()
+        connection.close()
+        return jsonify({"success": True, "conteo": conteo, "user_reaction": user_reaction}), 200
+    except Exception as e:
+        print(f"[REACCIONES] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/reacciones', methods=['POST'])
+def crear_o_toggle_reaccion():
+    """Crea o togglea una reacción"""
+    try:
+        data = request.get_json()
+        id_publicacion = data.get('id_publicacion')
+        id_usuario = data.get('id_usuario')
+        tipo = data.get('tipo')
+        if not all([id_publicacion, id_usuario, tipo]):
+            return jsonify({"success": False, "message": "Campos requeridos"}), 400
+
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT id, tipo FROM reacciones
+            WHERE id_publicacion = %s AND id_usuario = %s
+            LIMIT 1
+        """, (id_publicacion, id_usuario))
+        existente = cursor.fetchone()
+        if existente:
+            if existente[1] == tipo:
+                cursor.execute("DELETE FROM reacciones WHERE id = %s", (existente[0],))
+                action = "deleted"
+            else:
+                cursor.execute("UPDATE reacciones SET tipo = %s, fecha = NOW() WHERE id = %s", (tipo, existente[0]))
+                action = "updated"
+        else:
+            cursor.execute("""
+                INSERT INTO reacciones (id_publicacion, id_usuario, tipo, fecha)
+                VALUES (%s, %s, %s, NOW())
+            """, (id_publicacion, id_usuario, tipo))
+            action = "inserted"
+        connection.commit()
+        cursor.close()
+        connection.close()
+        return jsonify({"success": True, "action": action}), 200
+    except Exception as e:
+        print(f"[REACCIONES-POST] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/comentarios', methods=['POST'])
+def crear_comentario():
+    """Crea un comentario en una publicación"""
+    try:
+        data = request.get_json()
+        id_publicacion = data.get('id_publicacion')
+        id_usuario = data.get('id_usuario')
+        comentario = data.get('comentario')
+        
+        if not all([id_publicacion, id_usuario, comentario]):
+            return jsonify({"success": False, "message": "Campos requeridos"}), 400
+
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO comentarios (id_publicacion, id_usuario, comentario, fecha)
+                VALUES (%s, %s, %s, NOW())
+            """, (id_publicacion, id_usuario, comentario))
+            connection.commit()
+            last_id = cursor.lastrowid
+            cursor.close()
+            connection.close()
+            return jsonify({"success": True, "id": last_id, "message": "Comentario creado"}), 201
+        except Exception as e:
+            print(f"[COMENTARIOS-POST] Error en BD: {e}")
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e:
+        print(f"[COMENTARIOS-POST] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/comentarios/publicacion/<int:publicacion_id>', methods=['GET'])
+def obtener_comentarios_publicacion(publicacion_id):
+    """Obtiene todos los comentarios de una publicación"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            cursor.execute("""
+                SELECT 
+                    c.id, 
+                    c.comentario, 
+                    c.fecha,
+                    u.id AS autor_id, 
+                    u.nombre AS autor, 
+                    u.imagen_perfil_url
+                FROM comentarios c
+                JOIN usuarios u ON c.id_usuario = u.id
+                WHERE c.id_publicacion = %s
+                ORDER BY c.fecha ASC
+            """, (publicacion_id,))
+            
+            comentarios = cursor.fetchall()
+            
+            # Procesar URLs de imágenes
+            for c in comentarios:
+                if c['imagen_perfil_url'] and not c['imagen_perfil_url'].startswith('http'):
+                    c['imagen_perfil_url'] = f"http://localhost:5000{c['imagen_perfil_url']}"
+            
+            cursor.close()
+            connection.close()
+            return jsonify({"success": True, "comentarios": comentarios}), 200
+        except Exception as e:
+            print(f"[COMENTARIOS-GET] Error en BD: {e}")
+            cursor.close()
+            connection.close()
+            return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e:
+        print(f"[COMENTARIOS-GET] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/comentarios/<int:comentario_id>', methods=['DELETE'])
+def eliminar_comentario(comentario_id):
+    """Elimina un comentario (solo el autor o admin puede)"""
+    try:
+        data = request.get_json()
+        id_usuario = data.get('id_usuario')
+        
+        if not id_usuario:
+            return jsonify({"success": False, "message": "Usuario no identificado"}), 400
+
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            # Verificar que el usuario sea el autor del comentario
+            cursor.execute("SELECT id_usuario FROM comentarios WHERE id = %s", (comentario_id,))
+            comentario = cursor.fetchone()
+            
+            if not comentario:
+                cursor.close()
+                connection.close()
+                return jsonify({"success": False, "message": "Comentario no encontrado"}), 404
+            
+            if comentario['id_usuario'] != int(id_usuario):
+                cursor.close()
+                connection.close()
+                return jsonify({"success": False, "message": "No tienes permiso para eliminar este comentario"}), 403
+            
+            # Eliminar comentario
+            cursor.execute("DELETE FROM comentarios WHERE id = %s", (comentario_id,))
+            connection.commit()
+            
+            cursor.close()
+            connection.close()
+            return jsonify({"success": True, "message": "Comentario eliminado"}), 200
+        except Exception as e:
+            print(f"[COMENTARIOS-DELETE] Error en BD: {e}")
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e:
+        print(f"[COMENTARIOS-DELETE] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/comentarios-perfil/<int:id_perfil>', methods=['GET'])
+def obtener_comentarios_perfil(id_perfil):
+    """Obtiene comentarios del perfil de un usuario"""
+    try:
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT 
+                cp.id,
+                cp.comentario,
+                cp.fecha,
+                u.id AS autor_id,
+                u.nombre AS autor,
+                u.imagen_perfil_url
+            FROM comentarios_perfil cp
+            JOIN usuarios u ON cp.id_usuario_comentario = u.id
+            WHERE cp.id_perfil_usuario = %s
+            ORDER BY cp.fecha DESC
+        """, (id_perfil,))
+        
+        comentarios = cursor.fetchall()
+        
+        # Procesar URLs de imágenes
+        for c in comentarios:
+            if c['imagen_perfil_url'] and not c['imagen_perfil_url'].startswith('http'):
+                c['imagen_perfil_url'] = f"http://localhost:5000{c['imagen_perfil_url']}"
+        
+        cursor.close()
+        connection.close()
+        return jsonify({"success": True, "comentarios": comentarios}), 200
+    except Exception as e:
+        print(f"[COMENTARIOS-PERFIL-GET] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/comentarios-perfil', methods=['POST'])
+def crear_comentario_perfil():
+    """Crea un comentario en el perfil de un usuario"""
+    try:
+        data = request.get_json()
+        id_perfil = data.get('id_perfil_usuario')
+        id_usuario = data.get('id_usuario_comentario')
+        comentario = data.get('comentario')
+        
+        if not all([id_perfil, id_usuario, comentario]):
+            return jsonify({"success": False, "message": "Campos requeridos"}), 400
+
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO comentarios_perfil (id_perfil_usuario, id_usuario_comentario, comentario, fecha)
+                VALUES (%s, %s, %s, NOW())
+            """, (id_perfil, id_usuario, comentario))
+            connection.commit()
+            last_id = cursor.lastrowid
+            cursor.close()
+            connection.close()
+            return jsonify({"success": True, "id": last_id, "message": "Comentario creado"}), 201
+        except Exception as e:
+            print(f"[COMENTARIOS-PERFIL-POST] Error en BD: {e}")
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e:
+        print(f"[COMENTARIOS-PERFIL-POST] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/comentarios-perfil/<int:comentario_id>', methods=['DELETE'])
+def eliminar_comentario_perfil(comentario_id):
+    """Elimina un comentario del perfil"""
+    try:
+        data = request.get_json()
+        id_usuario = data.get('id_usuario_comentario')
+        
+        if not id_usuario:
+            return jsonify({"success": False, "message": "Usuario no identificado"}), 400
+
+        connection = get_db_connection()
+        if not connection:
+            return jsonify({"success": False, "message": "Error de conexión a la BD"}), 500
+        
+        cursor = connection.cursor(dictionary=True)
+        try:
+            # Verificar que el usuario sea el autor del comentario
+            cursor.execute("SELECT id_usuario_comentario FROM comentarios_perfil WHERE id = %s", (comentario_id,))
+            comentario = cursor.fetchone()
+            
+            if not comentario:
+                cursor.close()
+                connection.close()
+                return jsonify({"success": False, "message": "Comentario no encontrado"}), 404
+            
+            if comentario['id_usuario_comentario'] != int(id_usuario):
+                cursor.close()
+                connection.close()
+                return jsonify({"success": False, "message": "No tienes permiso para eliminar este comentario"}), 403
+            
+            # Eliminar comentario
+            cursor.execute("DELETE FROM comentarios_perfil WHERE id = %s", (comentario_id,))
+            connection.commit()
+            
+            cursor.close()
+            connection.close()
+            return jsonify({"success": True, "message": "Comentario eliminado"}), 200
+        except Exception as e:
+            print(f"[COMENTARIOS-PERFIL-DELETE] Error en BD: {e}")
+            connection.rollback()
+            cursor.close()
+            connection.close()
+            return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e:
+        print(f"[COMENTARIOS-PERFIL-DELETE] Error: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)

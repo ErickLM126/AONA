@@ -168,7 +168,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 15px 15px 15px;
+  padding: 0 0 15px 0; /* Elimina padding left/right para que ocupen ancho completo */
+  margin: 0; /* Elimina margin */
 }
 
 .feed-publicaciones::-webkit-scrollbar {
@@ -187,16 +188,23 @@
 /* Publicaciones */
 .publication-post {
   background: #fff;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #eee;
+  padding: 14px 15px; /* Agregar padding horizontal consistente */
+  border-radius: 0; /* Quitar border-radius para que ocupen ancho completo */
+  border: none; /* Quitar border */
+  border-bottom: 1px solid #eee; /* Separador inferior */
   transition: all 0.2s;
   flex-shrink: 0;
+  margin: 0; /* Asegurar sin margin */
+  width: 100%; /* Ocupar ancho completo */
+}
+
+.publication-post:first-child {
+  border-top: 1px solid #eee;
 }
 
 .publication-post:hover {
-  border-color: #ddd;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-bottom-color: #ddd;
+  box-shadow: none;
 }
 
 .post-header {
@@ -306,7 +314,6 @@
   align-items: center;
   justify-content: center;
   padding: 20px 15px;
-  background-image: url('https://images.unsplash.com/photo-1511379938547-c1f69b13d835?w=800&h=300&fit=crop');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -356,6 +363,7 @@
   object-fit: cover;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
   position: relative;
+  background: #ddd;
 }
 
 .profile-name {
@@ -997,4 +1005,251 @@ textarea.form-input {
 
 select.form-input {
   cursor: pointer;
+}
+
+/* Reacciones en publicaciones del perfil */
+.publication-reactions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.publication-reactions button {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.publication-reactions button:hover {
+  background: #e8e8e8;
+  border-color: #999;
+  transform: scale(1.05);
+}
+
+/* Comments en publicaciones del perfil */
+.publication-comments-toggle {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.comments-toggle-btn {
+  background: none;
+  border: none;
+  color: #38a169;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+.comments-toggle-btn:hover {
+  text-decoration: underline;
+}
+
+/* Comentarios expandidos en perfil */
+.publication-comments-expanded {
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #eee;
+}
+
+.publication-comments-list {
+  max-height: 250px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.publication-comments-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.publication-comments-list::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 2px;
+}
+
+.publication-comment-item {
+  background: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  border-left: 2px solid #38a169;
+  font-size: 0.85rem;
+  animation: slideInLeft 0.3s ease;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.publication-comment-item strong {
+  color: #111;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.publication-comment-item small {
+  color: #999;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.publication-comment-item p {
+  margin: 0;
+  color: #555;
+  line-height: 1.4;
+}
+
+/* Form comentario en perfil */
+.publication-comment-form {
+  display: flex;
+  gap: 6px;
+}
+
+.publication-comment-form input[type="text"] {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.publication-comment-form input[type="text"]:focus {
+  border-color: #38a169;
+}
+
+.publication-comment-form button {
+  background: #38a169;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.publication-comment-form button:hover {
+  background: #2f855a;
+}
+
+/* Tabla de comentarios */
+.comments-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.comments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8em;
+}
+
+.comments-table thead {
+  background: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.comments-table th {
+  padding: 8px;
+  text-align: left;
+  font-weight: 700;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+}
+
+.comments-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.comments-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.comments-table td {
+  padding: 8px;
+  color: #555;
+}
+
+.comment-user {
+  font-weight: 600;
+  color: #38a169;
+  min-width: 80px;
+  white-space: nowrap;
+}
+
+.comment-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.comment-input-area-perfil {
+  border-top: 1px solid #ddd;
+  padding: 8px;
+  flex-shrink: 0;
+  background: white;
+  z-index: 2;
+}
+
+.comment-input-area-perfil form {
+  display: flex;
+  gap: 6px;
+}
+
+.comment-input-perfil {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.comment-input-perfil:focus {
+  border-color: #38a169;
+}
+
+.comment-button-perfil {
+  background: #38a169;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.comment-button-perfil:hover {
+  background: #2f855a;
 }
