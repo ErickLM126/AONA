@@ -1,6 +1,12 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from backend.api_aona import app
+import sys
+import os
+
+# Agregar la carpeta padre al path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from api_aona import app
 
 
 class TestApiAona(unittest.TestCase):
@@ -8,7 +14,7 @@ class TestApiAona(unittest.TestCase):
 		self.app = app.test_client()
 		self.app.testing = True
 
-	@patch('backend.api_aona.get_db_connection')
+	@patch('api_aona.get_db_connection')
 	def test_registro_usuario_exitoso(self, mock_db_conn):
 		mock_conn = MagicMock()
 		mock_cursor = MagicMock()
@@ -21,6 +27,8 @@ class TestApiAona(unittest.TestCase):
 
 		payload = {
 			'nombre': 'Test User',
+			'usuario': 'testuser',
+			'email': 'test@example.com',
 			'contacto': '123456789',
 			'documento': '999999',
 			'contrasena': 'testpass'
@@ -28,10 +36,10 @@ class TestApiAona(unittest.TestCase):
 		response = self.app.post('/registro', json=payload)
 		self.assertEqual(response.status_code, 201)
 		data = response.get_json()
-		self.assertEqual(data["message"], "Artista registrado con éxito")
+		self.assertEqual(data["message"], "Usuario registrado con éxito")
 		self.assertTrue(data["success"])
 
-	@patch('backend.api_aona.get_db_connection')
+	@patch('api_aona.get_db_connection')
 	def test_login_usuario_exitoso(self, mock_db_conn):
 		mock_conn = MagicMock()
 		mock_cursor = MagicMock()
@@ -48,7 +56,7 @@ class TestApiAona(unittest.TestCase):
 		mock_conn.close.return_value = None
 
 		payload = {
-			'documento': '999999',
+			'identificador': '999999',
 			'contrasena': 'testpass'
 		}
 		response = self.app.post('/login', json=payload)
@@ -59,7 +67,7 @@ class TestApiAona(unittest.TestCase):
 		self.assertIn("usuario", data)
 		self.assertEqual(data["usuario"]["nombre"], "Test User")
 
-	@patch('backend.api_aona.get_db_connection')
+	@patch('api_aona.get_db_connection')
 	def test_login_usuario_fallido(self, mock_db_conn):
 		mock_conn = MagicMock()
 		mock_cursor = MagicMock()
@@ -71,14 +79,15 @@ class TestApiAona(unittest.TestCase):
 		mock_conn.close.return_value = None
 
 		payload = {
-			'documento': 'noexiste',
+			'identificador': 'noexiste',
 			'contrasena': 'incorrecta'
 		}
 		response = self.app.post('/login', json=payload)
 		self.assertEqual(response.status_code, 401)
 		data = response.get_json()
-		self.assertEqual(data["message"], "Documento o contraseña incorrectos")
+		self.assertEqual(data["message"], "Credenciales incorrectas")
 		self.assertFalse(data["success"])
 
 if __name__ == '__main__':
 	unittest.main()
+
